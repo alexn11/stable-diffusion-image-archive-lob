@@ -15,6 +15,11 @@
 
 # todos
 
+- initial image: set it up
+- clip exponent (not too low)
+- so far generated images are a bit boring
+
+## done
 - try better addresses than just digits
 
 # notes
