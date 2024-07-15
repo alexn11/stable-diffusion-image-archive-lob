@@ -19,6 +19,8 @@
 - clip exponent (not too low)
 - so far generated images are a bit boring
 - convert text prompt to key :)
+- 120 inference steps is a good number
+- 76 ?
 
 ## done
 - try better addresses than just digits
