@@ -7,12 +7,7 @@ from diffusers.utils import load_image
 import torch
 
 
-model_name = 'stabilityai/stable-diffusion-2-1-unclip-small'
-device = 'cuda'
-num_inference_steps = 50
-prompt = ''
-height = 416
-width = 640
+from prepare_model import prepare_config, prepare_model
 
 
 arg_parser = argparse.ArgumentParser()
@@ -31,19 +26,27 @@ prompt = parsed_args.prompt
 height = parsed_args.height
 width = parsed_args.width
 
+config = prepare_config(model_name=model_name,
+                        device=device,
+                        num_inference_steps=num_inference_steps,
+                        prompt=prompt,
+                        height=height,
+                        width=width)
+model_name = config['model_name']
+device = config['device']
+num_inference_steps = config['num_inference_steps']
+prompt = config['prompt']
+height = config['height']
+width = config['width']
+guidance_scale = config['guidance_scale']
+output_type = config['output_type']
+batch_size = config['batch_size']
+num_images_per_prompt = config['num_image_per_prompt']
+dtype = config['dtype']
+do_classifier_free_guidance = config['do_classifier_free_guidance']
+pipe = prepare_model(model_name, dtype, device)
 
-guidance_scale = 7.5
-output_type = 'pil'
-batch_size = 1 # = number of prompts
-num_images_per_prompt = 1
-dtype = torch.float32 if(device == 'cpu') else torch.float16
 
-do_classifier_free_guidance = guidance_scale > 1.0
-
-def load_model(model_name, dtype, device) -> DiffusionPipeline:
-    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype)
-    pipe.to(device)
-    return pipe
 
 def embed_prompt(prompt, device, num_images_per_prompt, do_classifier_free_guidance):
     prompt_embeds = pipe._encode_prompt(prompt,
@@ -55,7 +58,6 @@ def embed_prompt(prompt, device, num_images_per_prompt, do_classifier_free_guida
 
 
 with torch.no_grad():
-    pipe = load_model(model_name, dtype, device)
     prompt_embeds = embed_prompt(prompt, device, num_images_per_prompt, do_classifier_free_guidance)
     #
     pipe.scheduler.set_timesteps(num_inference_steps, device=device)

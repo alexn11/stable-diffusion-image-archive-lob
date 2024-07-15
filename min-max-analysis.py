@@ -1,15 +1,36 @@
 
-# copy paste here everything from base-run.py up to the with torch no grad bit & avoid to paste the argpasse bit as well
-(...)
-#
+
 
 
 from matplotlib import pyplot
 import torch
+from prepare_model import prepare_config, prepare_model
 
 
-with torch.no_grad():
-    pipe = load_model(model_name, dtype, device)
+def embed_prompt(prompt, device, num_images_per_prompt, do_classifier_free_guidance):
+    prompt_embeds = pipe._encode_prompt(prompt,
+                                        device,
+                                        num_images_per_prompt,
+                                        do_classifier_free_guidance,
+                                        None)
+    return prompt_embeds
+
+
+config = prepare_config()
+model_name = config['model_name']
+device = config['device']
+num_inference_steps = config['num_inference_steps']
+prompt = config['prompt']
+height = config['height']
+width = config['width']
+guidance_scale = config['guidance_scale']
+output_type = config['output_type']
+batch_size = config['batch_size']
+num_images_per_prompt = config['num_image_per_prompt']
+dtype = config['dtype']
+do_classifier_free_guidance = config['do_classifier_free_guidance']
+pipe = prepare_model(model_name, dtype, device)
+
 
 with open('ignored/texts1.txt', 'r') as f:
     texts = f.read().strip()
