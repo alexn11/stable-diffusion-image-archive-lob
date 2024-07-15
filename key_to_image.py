@@ -12,9 +12,13 @@ arg_parser.add_argument('--height', type=int, default=416)
 arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default='cuda')
 arg_parser.add_argument('--num-inference-steps', type=int, default=50)
 arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
+arg_parser.add_argument('--nb-keys', type=int, default=8)
 parsed_args = arg_parser.parse_args()
 
-config = prepare_config(**parsed_args.__dict__)
+config_dict = parsed_args.__dict__.copy()
+del(config_dict['nb_keys'])
+
+config = prepare_config(**config_dict)
 model_name = config['model_name']
 device = config['device']
 num_inference_steps = config['num_inference_steps']
@@ -29,7 +33,7 @@ dtype = config['dtype']
 do_classifier_free_guidance = config['do_classifier_free_guidance']
 pipe = prepare_model(model_name, dtype, device)
 
-nb_keys = 8
+nb_keys = parsed_args.nb_keys
 
 keys = [ generate_random_base64() for i in range(nb_keys) ]
 #array_key = compute_embedding_from_key(key)
