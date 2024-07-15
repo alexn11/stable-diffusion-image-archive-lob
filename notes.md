@@ -18,6 +18,7 @@
 - initial image: set it up
 - clip exponent (not too low)
 - so far generated images are a bit boring
+- convert text prompt to key :)
 
 ## done
 - try better addresses than just digits
