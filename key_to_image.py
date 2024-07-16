@@ -15,11 +15,17 @@ arg_parser.add_argument('--num-inference-steps', type=int, default=50)
 arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
 arg_parser.add_argument('--nb-keys', type=int, default=8)
 arg_parser.add_argument('--key-file', type=str, default='')
+arg_parser.add_argument('--seed', type=int, default=768)
+arg_parser.add_argument('--check-determinism', action='store_true')
+arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator'])
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
 del(config_dict['nb_keys'])
 del(config_dict['key_file'])
+del(config_dict['seed'])
+del(config_dict['check_determinism'])
+del(config_dict['latents_type'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -34,15 +40,18 @@ batch_size = config['batch_size']
 num_images_per_prompt = config['num_image_per_prompt']
 dtype = config['dtype']
 do_classifier_free_guidance = config['do_classifier_free_guidance']
-pipe = prepare_model(model_name, dtype, device)
+
 
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
+
 
 if(key_file_path != ''):
     with open(key_file_path, 'r') as key_file:
         key = key_file.read().strip()
     keys =  [ key, ]
+    if(parsed_args.check_determinism):
+        keys = [ key, key, key ]
 else:
     keys = [ generate_random_base64() for i in range(nb_keys) ]
 #array_key = compute_embedding_from_key(key)
@@ -53,12 +62,18 @@ else:
 #assert(prompt_embeds.shape == (2,77,768))
 
 
-def key_to_image(key: str, pipe: DiffusionPipeline, seed_image: torch.Tensor = None):
+def key_to_image(key: str,
+                 pipe: DiffusionPipeline,
+                 seed_image: torch.Tensor = None,
+                 generator: torch.Generator = None):
     array_key = compute_embedding_from_key(key)
     prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
     # TODO hgere
     num_channels_latents = pipe.unet.config.in_channels
+
+    if(seed_image is None):
+        raise Exception('fucked up')
 
     with torch.no_grad():
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -72,7 +87,7 @@ def key_to_image(key: str, pipe: DiffusionPipeline, seed_image: torch.Tensor = N
             width,
             prompt_embeds.dtype,
             device,
-            generator=None,
+            generator=generator,
             latents=seed_image,
         )
         #
@@ -118,6 +133,14 @@ def key_to_image(key: str, pipe: DiffusionPipeline, seed_image: torch.Tensor = N
             pipe.final_offload_hook.offload()
     return image
 
+
+if(parsed_args.latents_type == 'fixed-generator'):
+    generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
+else:
+    generator = None
+    
+pipe = prepare_model(model_name, dtype, device, generator=generator)
+
 vae_scale_factor = pipe.vae_scale_factor
 num_channels = pipe.unet.config.in_channels
 print(f'💄️ vae scale factor: {vae_scale_factor}')
@@ -129,8 +152,9 @@ latents = prepare_latents(batch_size=batch_size,
                           dtype=dtype,
                           height=height,
                           width=width,
-                          vae_scale_factor=vae_scale_factor)
+                          vae_scale_factor=vae_scale_factor,
+                          generator=generator)
 
 for key in keys:
-    image = key_to_image(key=key, pipe=pipe, seed_image=latents)
+    image = key_to_image(key=key, pipe=pipe, seed_image=latents, generator=generator)
     image[0].show()

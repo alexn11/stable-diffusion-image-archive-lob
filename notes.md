@@ -1,3 +1,17 @@
+# normal use
+
+```bash
+python key_to_image.py
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
+python key_to_image.py --key-file test-key.txt --num-inference-steps 26
+python key_to_image.py --nb-keys 4 --num-inference-steps 26
+python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type fixed-generator
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism --latents-type fixed-generator
+python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type blob
+
+```
+
 # ideas
 
 - use a small resolution model
@@ -142,11 +156,11 @@ img.show()
 
 ```python
 import torch
+import torchvision
+
 from prepare_model import prepare_latents
 
-latents = prepare_latents(1, 1, 3, 200, 300, torch.float16, 'cuda', 8)
-
-import torchvision
+latents = prepare_latents(1, 1, 3, 400, 600, torch.float16, 'cuda', 8)
 img = torchvision.transforms.functional.to_pil_image(latents[0])
 img.show()
 ```

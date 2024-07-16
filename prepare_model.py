@@ -4,8 +4,8 @@ import torch
 
 
 
-def load_model(model_name, dtype, device) -> DiffusionPipeline:
-    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype)
+def load_model(model_name, dtype, device, generator=None) -> DiffusionPipeline:
+    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype, generator=generator)
     pipe.to(device)
     return pipe
 
@@ -42,9 +42,19 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
         'do_classifier_free_guidance': do_classifier_free_guidance,
     }
 
-def prepare_model(model_name, dtype, device) -> DiffusionPipeline:
-    pipe = load_model(model_name, dtype, device)
+def prepare_model(model_name, dtype, device, generator=None) -> DiffusionPipeline:
+    pipe = load_model(model_name, dtype, device, generator=generator)
     return pipe
+
+def add_special_filter_to_base_latents(latents, width, height, device, dtype):
+    x = torch.linspace(-width, width, width, dtype=dtype, device=device, requires_grad=False)
+    y = torch.linspace(-height, height, height, dtype=dtype, device=device, requires_grad=False)
+    x_grid, y_grid = torch.meshgrid(y, x)
+    normalisation_factor = 2. / (0.5 * (width + height)**2)
+    distance_to_center = ((x_grid*x_grid) + (y_grid*y_grid)) * normalisation_factor
+    print(f'lat={latents.shape}, dis={distance_to_center.shape}')
+    latents = torch.exp(-distance_to_center) * latents
+    return latents
 
 def prepare_latents(batch_size,
                     num_images_per_prompt,
@@ -53,22 +63,27 @@ def prepare_latents(batch_size,
                     width,
                     dtype,
                     device,
-                    vae_scale_factor):
+                    vae_scale_factor,
+                    generator=None):
     shape_base = (
         batch_size * num_images_per_prompt,
         num_channels_latents,
     )
     latent_height = height // vae_scale_factor
     latent_width = width // vae_scale_factor
-    #return torch.randn(shape_base + (latent_height, latent_width), dtype=dtype, device=device)
-    latents = torch.zeros(shape_base + (latent_height * latent_width, ), dtype=dtype, device=device)
-    for channel_i in range(num_channels_latents):
-        latents[:, channel_i, channel_i::3] = 1.
-    latents = latents.reshape(shape_base + (latent_height, latent_width))
-    x = torch.linspace(-width, width, width, dtype=dtype, device=device, requires_grad=False)
-    y = torch.linspace(-height, height, height, dtype=dtype, device=device, requires_grad=False)
-    x_grid, y_grid = torch.meshgrid(x, y)
-    normalisation_factor = 0.5 * (width + height)**2
-    distance_to_center = ((x_grid*x_grid) + (y_grid*y_grid)) * normalisation_factor
-    latents = torch.exp(-distance_to_center) * latents
+    if(generator is not None):
+        latents = torch.randn(shape_base + (latent_height, latent_width),
+                              dtype=dtype,
+                              device=device,
+                              generator=generator)
+    else:
+        latents = torch.zeros(shape_base + (latent_height * latent_width, ), dtype=dtype, device=device)
+        for channel_i in range(num_channels_latents):
+            latents[:, channel_i, channel_i::3] = 1.
+        latents = latents.reshape(shape_base + (latent_height, latent_width))
+        latents = add_special_filter_to_base_latents(latents,
+                                                    width=latent_width,
+                                                    height=latent_height,
+                                                    device=device,
+                                                    dtype=dtype)
     return latents
