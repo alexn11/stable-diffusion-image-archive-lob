@@ -9,7 +9,7 @@ python key_to_image.py --nb-keys 4 --num-inference-steps 26
 python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type fixed-generator
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism --latents-type fixed-generator
 python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type blob
-
+ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-type fixed-generator --output test3
 ```
 
 # ideas

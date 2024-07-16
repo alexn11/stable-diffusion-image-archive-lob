@@ -2,6 +2,7 @@ import argparse
 
 import torch
 from diffusers import DiffusionPipeline
+from diffusers.utils.testing_utils import enable_full_determinism
 
 from prepare_model import prepare_config, prepare_model, prepare_latents
 from key_to_embedding import generate_random_base64, compute_embedding_from_key
@@ -19,6 +20,7 @@ arg_parser.add_argument('--seed', type=int, default=768)
 arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
 arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator'])
+arg_parser.add_argument('--output', type=str, default='')
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
@@ -28,6 +30,7 @@ del(config_dict['seed'])
 del(config_dict['check_determinism'])
 del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
+del(config_dict['output'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -77,7 +80,7 @@ def key_to_image(key: str,
         raise Exception('fucked up')
 
     with torch.no_grad():
-        #generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
+        generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
         #pipe.generator.set_state(generator.get_state())
         #print(f'PIPE STATE;:{pipe.generator.get_state()}')
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -91,7 +94,7 @@ def key_to_image(key: str,
             width,
             prompt_embeds.dtype,
             device,
-            generator=generator,
+            generator=None,
             latents=seed_image,
         )
         #
@@ -118,7 +121,11 @@ def key_to_image(key: str,
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
                     noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
                 # compute the previous noisy sample x_t -> x_t-1
-                latents = pipe.scheduler.step(noise_pred, t, latents, **extra_step_kwargs, return_dict=False)[0]
+                latents = pipe.scheduler.step(noise_pred,
+                                              t,
+                                              latents,
+                                              **extra_step_kwargs,
+                                              return_dict=False)[0]
                 # call the callback, if provided
                 if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % pipe.scheduler.order == 0):
                     progress_bar.update()
@@ -138,13 +145,15 @@ def key_to_image(key: str,
     return image
 
 
+enable_full_determinism()
+
 if(parsed_args.latents_type == 'fixed-generator'):
     generator = torch.Generator(device=device).manual_seed(parsed_args.latents_seed)
 else:
     generator = None
 
-#pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
-pipe_generator = None
+pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
+#pipe_generator = None
 pipe = prepare_model(model_name, dtype, device, )
 
 vae_scale_factor = pipe.vae_scale_factor
@@ -161,6 +170,9 @@ latents = prepare_latents(batch_size=batch_size,
                           vae_scale_factor=vae_scale_factor,
                           generator=generator)
 
-for key in keys:
+for key_i, key in enumerate(keys):
     image = key_to_image(key=key, pipe=pipe, seed_image=latents, generator=pipe_generator)
     image[0].show()
+    if(parsed_args.output != ''):
+        output_file_path = f'{parsed_args.output}-{key_i:03d}.png'
+        image[0].save(output_file_path)

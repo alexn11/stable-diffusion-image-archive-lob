@@ -4,8 +4,8 @@ import torch
 
 
 
-def load_model(model_name, dtype, device, generator=None) -> DiffusionPipeline:
-    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype, generator=generator)
+def load_model(model_name, dtype, device) -> DiffusionPipeline:
+    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype)
     pipe.to(device)
     return pipe
 
@@ -42,8 +42,8 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
         'do_classifier_free_guidance': do_classifier_free_guidance,
     }
 
-def prepare_model(model_name, dtype, device, generator=None) -> DiffusionPipeline:
-    pipe = load_model(model_name, dtype, device, generator=generator)
+def prepare_model(model_name, dtype, device) -> DiffusionPipeline:
+    pipe = load_model(model_name, dtype, device)
     return pipe
 
 def add_special_filter_to_base_latents(latents, width, height, device, dtype):
