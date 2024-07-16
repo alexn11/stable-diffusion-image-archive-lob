@@ -16,6 +16,7 @@ arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-di
 arg_parser.add_argument('--nb-keys', type=int, default=8)
 arg_parser.add_argument('--key-file', type=str, default='')
 arg_parser.add_argument('--seed', type=int, default=768)
+arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
 arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator'])
 parsed_args = arg_parser.parse_args()
@@ -26,6 +27,7 @@ del(config_dict['key_file'])
 del(config_dict['seed'])
 del(config_dict['check_determinism'])
 del(config_dict['latents_type'])
+del(config_dict['latents_seed'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -69,13 +71,15 @@ def key_to_image(key: str,
     array_key = compute_embedding_from_key(key)
     prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    # TODO hgere
     num_channels_latents = pipe.unet.config.in_channels
 
     if(seed_image is None):
         raise Exception('fucked up')
 
     with torch.no_grad():
+        #generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
+        #pipe.generator.set_state(generator.get_state())
+        #print(f'PIPE STATE;:{pipe.generator.get_state()}')
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps = pipe.scheduler.timesteps
         #
@@ -135,11 +139,13 @@ def key_to_image(key: str,
 
 
 if(parsed_args.latents_type == 'fixed-generator'):
-    generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
+    generator = torch.Generator(device=device).manual_seed(parsed_args.latents_seed)
 else:
     generator = None
-    
-pipe = prepare_model(model_name, dtype, device, generator=generator)
+
+#pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
+pipe_generator = None
+pipe = prepare_model(model_name, dtype, device, )
 
 vae_scale_factor = pipe.vae_scale_factor
 num_channels = pipe.unet.config.in_channels
@@ -156,5 +162,5 @@ latents = prepare_latents(batch_size=batch_size,
                           generator=generator)
 
 for key in keys:
-    image = key_to_image(key=key, pipe=pipe, seed_image=latents, generator=generator)
+    image = key_to_image(key=key, pipe=pipe, seed_image=latents, generator=pipe_generator)
     image[0].show()

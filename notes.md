@@ -14,6 +14,8 @@ python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type blob
 
 # ideas
 
+- the only way to ensure reproducibility is to create the pipe from scratch every time an image is generated
+
 - use a small resolution model
 - use a quantised model
 - use the embedding of the prompt as key
