@@ -1,8 +1,9 @@
 import argparse
 
 import torch
+from diffusers import DiffusionPipeline
 
-from prepare_model import prepare_config, prepare_model
+from prepare_model import prepare_config, prepare_model, prepare_latents
 from key_to_embedding import generate_random_base64, compute_embedding_from_key
 
 arg_parser = argparse.ArgumentParser()
@@ -13,10 +14,12 @@ arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default
 arg_parser.add_argument('--num-inference-steps', type=int, default=50)
 arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
 arg_parser.add_argument('--nb-keys', type=int, default=8)
+arg_parser.add_argument('--key-file', type=str, default='')
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
 del(config_dict['nb_keys'])
+del(config_dict['key_file'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -34,8 +37,14 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 pipe = prepare_model(model_name, dtype, device)
 
 nb_keys = parsed_args.nb_keys
+key_file_path = parsed_args.key_file
 
-keys = [ generate_random_base64() for i in range(nb_keys) ]
+if(key_file_path != ''):
+    with open(key_file_path, 'r') as key_file:
+        key = key_file.read().strip()
+    keys =  nb_keys * [ key, ]
+else:
+    keys = [ generate_random_base64() for i in range(nb_keys) ]
 #array_key = compute_embedding_from_key(key)
 #prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
 #assert(-1e-6 < prompt_embeds[0,19].item() + 28.078125 < 1e-6)
@@ -43,16 +52,18 @@ keys = [ generate_random_base64() for i in range(nb_keys) ]
 #prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
 #assert(prompt_embeds.shape == (2,77,768))
 
-def key_to_image(key: str):
+
+def key_to_image(key: str, pipe: DiffusionPipeline, seed_image: torch.Tensor = None):
     array_key = compute_embedding_from_key(key)
     prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
+    # TODO hgere
+    num_channels_latents = pipe.unet.config.in_channels
 
     with torch.no_grad():
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps = pipe.scheduler.timesteps
         #
-        num_channels_latents = pipe.unet.config.in_channels
         #
         latents = pipe.prepare_latents(
             batch_size * num_images_per_prompt,
@@ -62,7 +73,7 @@ def key_to_image(key: str):
             prompt_embeds.dtype,
             device,
             generator=None,
-            latents=None,
+            latents=seed_image,
         )
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
@@ -107,6 +118,19 @@ def key_to_image(key: str):
             pipe.final_offload_hook.offload()
     return image
 
+vae_scale_factor = pipe.vae_scale_factor
+num_channels = pipe.unet.config.in_channels
+print(f'💄️ vae scale factor: {vae_scale_factor}')
+print(f'💄️ num channels: {num_channels}')
+latents = prepare_latents(batch_size=batch_size,
+                          num_channels_latents=num_channels,
+                          num_images_per_prompt=num_images_per_prompt,
+                          device=device,
+                          dtype=dtype,
+                          height=height,
+                          width=width,
+                          vae_scale_factor=vae_scale_factor)
+
 for key in keys:
-    image = key_to_image(key)
+    image = key_to_image(key=key, pipe=pipe, seed_image=latents)
     image[0].show()

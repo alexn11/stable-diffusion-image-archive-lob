@@ -96,3 +96,41 @@ pyplot.show()
 check the range is ok
 
 convert this into an image!
+
+## initial image
+
+
+probably set by `prepare_latents` (in `pipeline_stable_diffusion.py`)
+
+```python
+def prepare_latents(self, batch_size, num_channels_latents, height, width, dtype, device, generator, latents=None):
+    shape = (batch_size, num_channels_latents, height // self.vae_scale_factor, width // self.vae_scale_factor)
+    if latents is None:
+        latents = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
+    else:
+        latents = latents.to(device)
+```
+
+here called:
+```python
+latents = pipe.prepare_latents(
+            batch_size * num_images_per_prompt,
+            num_channels_latents,
+            height,
+            width,
+            prompt_embeds.dtype,
+            device,
+            generator=None,
+            latents=None,
+        )
+```
+
+notes: vae scale factor is equal to 8
+
+convert latents to image (1st of the batch):
+```python
+import torchvision
+img = torchvision.transforms.functional.to_pil_image(latents[0])
+img.show()
+```
+

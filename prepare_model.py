@@ -42,6 +42,26 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
         'do_classifier_free_guidance': do_classifier_free_guidance,
     }
 
-def prepare_model(model_name, dtype, device):
+def prepare_model(model_name, dtype, device) -> DiffusionPipeline:
     pipe = load_model(model_name, dtype, device)
     return pipe
+
+def prepare_latents(batch_size,
+                    num_images_per_prompt,
+                    num_channels_latents,
+                    height,
+                    width,
+                    dtype,
+                    device,
+                    vae_scale_factor):
+    shape_base = (
+        batch_size * num_images_per_prompt,
+        num_channels_latents,
+    )
+    latent_height = height // vae_scale_factor
+    latent_width = width // vae_scale_factor
+    #return torch.randn(shape_base + (latent_height, latent_width), dtype=dtype, device=device)
+    latents = torch.zeros(shape_base + (latent_height * latent_width, ), dtype=dtype, device=device)
+    for channel_i in range(num_channels_latents):
+        latents[:, channel_i, channel_i::3] = 1.
+    return latents.reshape(shape_base + (latent_height, latent_width))
