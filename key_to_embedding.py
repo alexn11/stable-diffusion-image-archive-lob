@@ -4,6 +4,8 @@ import struct
 
 import numpy as np
 
+# key things
+
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 def generate_random_base64(nb_bytes: int = 118268) -> str:
@@ -13,6 +15,9 @@ def generate_random_base64(nb_bytes: int = 118268) -> str:
 
 def convert_key_to_binary(key: str) -> bytes:
     return base64.b64decode(key + '==')
+
+
+#
 
 def convert_exponent_to_5_bits(datum: int):
     exp = (datum & 0b011110000000000) >> 10

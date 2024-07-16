@@ -21,6 +21,7 @@ arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
 arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator'])
 arg_parser.add_argument('--output', type=str, default='')
+arg_parser.add_argument('--prompt', type=str, default='')
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
@@ -31,6 +32,7 @@ del(config_dict['check_determinism'])
 del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
 del(config_dict['output'])
+del(config_dict['prompt'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
