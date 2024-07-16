@@ -64,4 +64,11 @@ def prepare_latents(batch_size,
     latents = torch.zeros(shape_base + (latent_height * latent_width, ), dtype=dtype, device=device)
     for channel_i in range(num_channels_latents):
         latents[:, channel_i, channel_i::3] = 1.
-    return latents.reshape(shape_base + (latent_height, latent_width))
+    latents = latents.reshape(shape_base + (latent_height, latent_width))
+    x = torch.linspace(-width, width, width, dtype=dtype, device=device, requires_grad=False)
+    y = torch.linspace(-height, height, height, dtype=dtype, device=device, requires_grad=False)
+    x_grid, y_grid = torch.meshgrid(x, y)
+    normalisation_factor = 0.5 * (width + height)**2
+    distance_to_center = ((x_grid*x_grid) + (y_grid*y_grid)) * normalisation_factor
+    latents = torch.exp(-distance_to_center) * latents
+    return latents

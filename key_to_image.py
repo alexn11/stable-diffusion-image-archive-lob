@@ -42,7 +42,7 @@ key_file_path = parsed_args.key_file
 if(key_file_path != ''):
     with open(key_file_path, 'r') as key_file:
         key = key_file.read().strip()
-    keys =  nb_keys * [ key, ]
+    keys =  [ key, ]
 else:
     keys = [ generate_random_base64() for i in range(nb_keys) ]
 #array_key = compute_embedding_from_key(key)

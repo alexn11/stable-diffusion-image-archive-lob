@@ -127,8 +127,25 @@ latents = pipe.prepare_latents(
 
 notes: vae scale factor is equal to 8
 
+```python
+latents = prepare_latents(1, 1, 3, 200, 300, torch.float16, 'cuda', 8)
+```
+
 convert latents to image (1st of the batch):
 ```python
+import torchvision
+img = torchvision.transforms.functional.to_pil_image(latents[0])
+img.show()
+```
+
+### thing
+
+```python
+import torch
+from prepare_model import prepare_latents
+
+latents = prepare_latents(1, 1, 3, 200, 300, torch.float16, 'cuda', 8)
+
 import torchvision
 img = torchvision.transforms.functional.to_pil_image(latents[0])
 img.show()
