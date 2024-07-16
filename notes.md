@@ -14,6 +14,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # ideas
 
+- latents shape is rather small might be worth using this as a key; add it to the key mayeb?
+
 - the only way to ensure reproducibility is to create the pipe from scratch every time an image is generated
 
 - use a small resolution model
