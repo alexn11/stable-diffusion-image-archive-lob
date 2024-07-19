@@ -61,7 +61,7 @@ if(key_file_path != ''):
     if(parsed_args.check_determinism):
         keys = [ key, key, key ]
 else:
-    keys = [ generate_random_base64() for i in range(nb_keys) ]
+    keys = [ generate_random_base64((77*768+4*52*80)*2) for i in range(nb_keys) ]
 #array_key = compute_embedding_from_key(key)
 #prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
 #assert(-1e-6 < prompt_embeds[0,19].item() + 28.078125 < 1e-6)

@@ -10,11 +10,35 @@ base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 
 def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
     # 110880 == 77 * 768 * 15 / 8
-    length = nb_bytes * 8 // 6
-    return ''.join([ random.choice(base64_characters) for i in range(length) ])
+    nb_bits = nb_bytes * 8 
+    length = nb_bits // 6
+    nb_extra_bits = nb_bits % 6
+    base64_key = ''.join([ random.choice(base64_characters) for i in range(length) ])
+    match(nb_extra_bits):
+        case 0:
+            extra_bits = ''
+        case 2:
+            extra_bits = random.choice(base64_characters[:4])
+        case 4:
+            extra_bits = random.choice(base64_characters[:16])
+    return base64_key + extra_bits
 
 def convert_key_to_binary(key: str) -> bytes:
-    return base64.b64decode(key + '==')
+    try:
+        bin_key = base64.b64decode(key)
+    except:
+        try:
+            bin_key = base64.b64decode(key + '=')
+        except:
+            try:
+                bin_key = base64.b64decode(key + '==')
+            except:
+                try:
+                    bin_key = base64.b64decode(key + '===')
+                except:
+                    raise
+    # https://stackoverflow.com/questions/73089007/invalid-base64-encoded-string-number-of-data-characters-13-cannot-be-1-more-t
+    return bin_key
 
 
 #
@@ -49,6 +73,7 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
             data_i += 2
         elif(data_i == 681*2):
             data_i += 2
+    print(f'🐢️ 🐢️ 🐢️ extracted {data_i} float from key of len {len(key_bin)} - expected size:{data_size}')
     return bytes(data)
 
 def convert_bin_key_to_float_array(data: bytes) -> bytes:
