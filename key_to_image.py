@@ -97,7 +97,7 @@ def key_to_image(key: str,
         timesteps = pipe.scheduler.timesteps
         #
         #
-        print(f'before: {seed_image[0][:][0][0]}')
+        #print(f'before: {seed_image[0][:][0][0]}')
         latents = pipe.prepare_latents(
             batch_size * num_images_per_prompt,
             num_channels_latents,
@@ -108,7 +108,7 @@ def key_to_image(key: str,
             generator=None,
             latents=seed_image,
         )
-        print(f'after: {seed_image[0][:][0][0]}')
+        #print(f'after: {seed_image[0][:][0][0]}')
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
         #
