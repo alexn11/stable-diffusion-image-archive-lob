@@ -156,6 +156,13 @@ img = torchvision.transforms.functional.to_pil_image(latents[0])
 img.show()
 ```
 
+
+the actual shape of the latents is: 1, 4, 52, 80
+that is 80*52*4 = 16640 numbers
+that is 33280 bytes (x2)
+that is 499200 encoded bits (x15)
+that is 83200 extra characters (/6)
+
 ### thing
 
 ```python

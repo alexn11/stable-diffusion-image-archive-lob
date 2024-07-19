@@ -1,11 +1,12 @@
 import argparse
+from functools import reduce
 
 import torch
 from diffusers import DiffusionPipeline
 from diffusers.utils.testing_utils import enable_full_determinism
 
-from prepare_model import prepare_config, prepare_model, prepare_latents
-from key_to_embedding import generate_random_base64, compute_embedding_from_key
+from prepare_model import prepare_config, prepare_model
+from key_to_embedding import generate_random_base64, compute_embedding_and_latents_from_key
 
 arg_parser = argparse.ArgumentParser()
 #arg_parser.add_argument('prompt', type=str, default='this is the default prompt')
@@ -71,15 +72,22 @@ else:
 
 def key_to_image(key: str,
                  pipe: DiffusionPipeline,
-                 seed_image: torch.Tensor = None,
-                 generator: torch.Generator = None):
-    array_key = compute_embedding_from_key(key)
-    prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
+                 generator: torch.Generator = None,
+                 dtype = torch.float16,
+                 device = 'cuda',
+                 prompt_embeddings_shape=(77,768),
+                 latents_shape=(1, 4, 52, 80)):
+    ( prompt_embeds_data,
+      latents_data ) = compute_embedding_and_latents_from_key(key,
+                                                              prompt_embeddings_size=reduce(lambda x,y:x*y, prompt_embeddings_shape),
+                                                              latents_size=reduce(lambda x,y:x*y, latents_shape))
+    prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
+    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
     num_channels_latents = pipe.unet.config.in_channels
 
-    if(seed_image is None):
-        raise Exception('fucked up')
+    #if(seed_image is None):
+    #    raise Exception('fucked up')
 
     with torch.no_grad():
         generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
@@ -89,6 +97,7 @@ def key_to_image(key: str,
         timesteps = pipe.scheduler.timesteps
         #
         #
+        print(f'before: {seed_image[0][:][0][0]}')
         latents = pipe.prepare_latents(
             batch_size * num_images_per_prompt,
             num_channels_latents,
@@ -99,6 +108,7 @@ def key_to_image(key: str,
             generator=None,
             latents=seed_image,
         )
+        print(f'after: {seed_image[0][:][0][0]}')
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
         #
@@ -158,6 +168,7 @@ pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
 #pipe_generator = None
 pipe = prepare_model(model_name, dtype, device, )
 
+"""
 vae_scale_factor = pipe.vae_scale_factor
 num_channels = pipe.unet.config.in_channels
 print(f'💄️ vae scale factor: {vae_scale_factor}')
@@ -171,9 +182,10 @@ latents = prepare_latents(batch_size=batch_size,
                           width=width,
                           vae_scale_factor=vae_scale_factor,
                           generator=generator)
-
+"""
+                          
 for key_i, key in enumerate(keys):
-    image = key_to_image(key=key, pipe=pipe, seed_image=latents, generator=pipe_generator)
+    image = key_to_image(key=key, pipe=pipe, generator=pipe_generator)
     image[0].show()
     if(parsed_args.output != ''):
         output_file_path = f'{parsed_args.output}-{key_i:03d}.png'

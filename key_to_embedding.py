@@ -8,7 +8,7 @@ import numpy as np
 
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-def generate_random_base64(nb_bytes: int = 118268) -> str:
+def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
     # 110880 == 77 * 768 * 15 / 8
     length = nb_bytes * 8 // 6
     return ''.join([ random.choice(base64_characters) for i in range(length) ])
@@ -26,7 +26,7 @@ def convert_exponent_to_5_bits(datum: int):
     datum = (datum & 0b000001111111111) | (exp << 10) | (sign << 15)
     return datum
 
-def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)*2) -> bytes:
+def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)*2+4*52*80*2) -> bytes:
     data = bytearray(data_size * [0])
     datum = 0
     datum_bit_i = 0
@@ -51,20 +51,31 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
             data_i += 2
     return bytes(data)
 
-def convert_bin_key_to_float_array(key: bytes, data_size=(77*768)*2) -> bytes:
-    data =  unpack_binary_key_into_binary_float_array(key)
-    float_array = struct.unpack(f'>{data_size//2}e', data)
-    # special fixed values
+def convert_bin_key_to_float_array(data: bytes) -> bytes:
+    data_size = len(data)
+    nb_floats = data_size // 2
+    float_array = struct.unpack(f'>{nb_floats}e', data)
     float_array = np.array(float_array)
-    float_array[19] = -28.078125
-    float_array[681] = 33.09375
     return float_array
 
-def compute_embedding_from_key(key: str|None = None,
-                               key_file_path: str|None = None,
-                               ):
+def compute_embedding_and_latents_from_key(key: str|None = None,
+                                           key_file_path: str|None = None,
+                                           prompt_embeddings_size=77*768,
+                                           latents_size=4*52*80):
     if(key is None):
         with open(key_file_path, 'r') as key_file:
             key = key_file.read().strip()
     key_bin = convert_key_to_binary(key)
-    return convert_bin_key_to_float_array(key_bin)
+    prompt_embeddings_bin_size = 2 * prompt_embeddings_size
+    latents_bin_size = 2 * latents_size
+    data_bin_size = prompt_embeddings_bin_size + latents_bin_size
+    data =  unpack_binary_key_into_binary_float_array(key_bin, data_size=data_bin_size)
+    prompt_embeddings = convert_bin_key_to_float_array(data[:prompt_embeddings_bin_size],)
+    # specific values
+    prompt_embeddings[19] = -28.078125
+    prompt_embeddings[681] = 33.09375
+    #
+    assert(len(prompt_embeddings) == prompt_embeddings_size)
+    latents = convert_bin_key_to_float_array(data[prompt_embeddings_bin_size:])
+    assert(len(latents)==latents_size)
+    return prompt_embeddings, latents
