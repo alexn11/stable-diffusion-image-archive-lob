@@ -76,6 +76,21 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
     print(f'🐢️ 🐢️ 🐢️ extracted {data_i} float from key of len {len(key_bin)} - expected size:{data_size}')
     return bytes(data)
 
+def pack_float_array_into_binary_key(float16_array: np.ndarray, data_size=(77*768)*2+4*52*80*2) -> bytes:
+    array_size_bytes = len(float16_array) * 2
+    array_data = bytes(float16_array.data)
+    packed_data_size_bits = array_size_bytes * 15
+    packed_data_size_bytes = packed_data_size_bits // 8
+    packed_data_nb_extra_bits = packed_data_size_bits % 8
+    if(packed_data_nb_extra_bits > 0):
+        packed_data_size_bytes += 1
+    packed_data = bytes(packed_data_size_bytes * [0])
+    for float_i in range(array_size_bytes):
+        pass
+    return None +1
+
+
+
 def convert_bin_key_to_float_array(data: bytes) -> bytes:
     data_size = len(data)
     nb_floats = data_size // 2

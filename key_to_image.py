@@ -20,7 +20,7 @@ arg_parser.add_argument('--key-file', type=str, default='')
 arg_parser.add_argument('--seed', type=int, default=768)
 arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
-arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator'])
+#arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator']) # obsolete
 arg_parser.add_argument('--output', type=str, default='')
 arg_parser.add_argument('--prompt', type=str, default='')
 parsed_args = arg_parser.parse_args()
@@ -30,7 +30,7 @@ del(config_dict['nb_keys'])
 del(config_dict['key_file'])
 del(config_dict['seed'])
 del(config_dict['check_determinism'])
-del(config_dict['latents_type'])
+#del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
 del(config_dict['output'])
 del(config_dict['prompt'])
@@ -159,10 +159,11 @@ def key_to_image(key: str,
 
 enable_full_determinism()
 
-if(parsed_args.latents_type == 'fixed-generator'):
-    generator = torch.Generator(device=device).manual_seed(parsed_args.latents_seed)
-else:
-    generator = None
+#if(parsed_args.latents_type == 'fixed-generator'):
+#    generator = torch.Generator(device=device).manual_seed(parsed_args.latents_seed)
+#else:
+#    generator = None
+generator = None
 
 pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
 #pipe_generator = None
