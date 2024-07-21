@@ -33,15 +33,16 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-- unpack might be bugged stupid me believing chatgpt
-- initial image: set it up
-- clip exponent (not too low)
+- there is an issue with key length
 - so far generated images are a bit boring
 - convert text prompt to key :)
 - 120 inference steps is a good number
 - 76 ?
 
 ## done
+- unpack might be bugged stupid me believing chatgpt
+- initial image: set it up
+- clip exponent (not too low)
 - try better addresses than just digits
 
 # notes

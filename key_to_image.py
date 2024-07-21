@@ -62,6 +62,8 @@ if(key_file_path != ''):
         keys = [ key, key, key ]
 else:
     keys = [ generate_random_base64((77*768+4*52*80)*2) for i in range(nb_keys) ]
+    for k in keys:
+        print(f'{len(k)}')
 #array_key = compute_embedding_from_key(key)
 #prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
 #assert(-1e-6 < prompt_embeds[0,19].item() + 28.078125 < 1e-6)
@@ -186,6 +188,7 @@ latents = prepare_latents(batch_size=batch_size,
 """
                           
 for key_i, key in enumerate(keys):
+    print(f'key len={len(key)}')
     image = key_to_image(key=key, pipe=pipe, generator=pipe_generator)
     image[0].show()
     if(parsed_args.output != ''):

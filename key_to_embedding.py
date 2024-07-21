@@ -10,7 +10,9 @@ base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 
 def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
     # 110880 == 77 * 768 * 15 / 8
-    nb_bits = nb_bytes * 8 
+    nb_bits_orig = nb_bytes * 8
+    nb_bits = (nb_bits_orig * 15) // 16
+    nb_bits += (nb_bits_orig * 15 ) % 16
     length = nb_bits // 6
     nb_extra_bits = nb_bits % 6
     base64_key = ''.join([ random.choice(base64_characters) for i in range(length) ])
@@ -85,44 +87,17 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
             extra_bits = (byte >> (7 - nb_extra_bits)) & 0xff
         is_8_bits = not is_8_bits
     #
-    for i in range(6):
-        print(f'{unpacked_bytes[i]:08b}')
+    #for i in range(6):
+    #    print(f'{unpacked_bytes[i]:08b}')
     #
     for value_i in range(data_size // 2):
         datum = (unpacked_bytes[2 * value_i + 1] << 8) | unpacked_bytes[2 * value_i]
         datum = convert_exponent_to_5_bits(datum)
-        print(f'datum={datum:016b} - {datum:f}')
+        #print(f'datum={datum:016b}')
         unpacked_bytes[2 * value_i + 1] = (datum >> 8) & 0xff
         unpacked_bytes[2 * value_i] = datum & 0xff
     #
     return unpacked_bytes
-    #
-    data = bytearray(data_size * [0])
-    datum = 0
-    datum_bit_i = 0
-    data_i = 0
-    for key_byte_bit_i in range(0, 8*len(key_bin), 15):
-        key_byte_i = key_byte_bit_i // 8
-        print(f'key byte = {key_bin[key_byte_i]:08b}')
-        datum = 0
-        for datum_bit_i in range(15):
-            key_bit_i = key_byte_bit_i + datum_bit_i
-            if(key_bit_i < len(key_bin)*8):
-                datum = (datum << 1) | ((key_bin[key_byte_i] >> (7 - key_bit_i % 8)) & 1)
-        print(f'datum = {datum:016b}')
-        datum = convert_exponent_to_5_bits(datum)
-        if(data_i >= data_size):
-            break
-        data[data_i] = (datum >> 8) # % 256
-        data[data_i + 1] = datum % 256
-        data_i += 2
-        # special fixed values
-        if(data_i == 19*2):
-            data_i += 2
-        elif(data_i == 681*2):
-            data_i += 2
-    print(f'🐢️ 🐢️ 🐢️ extracted {data_i} float from key of len {len(key_bin)} - expected size:{data_size}')
-    return bytes(data)
 
 def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
     array_len = len(float16_array)
@@ -178,7 +153,6 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
     return packed_data
 
 
-
 def convert_bin_key_to_float_array(data: bytes, endian='<') -> bytes:
     data_size = len(data)
     nb_floats = data_size // 2
@@ -197,6 +171,7 @@ def compute_embedding_and_latents_from_key(key: str|None = None,
     prompt_embeddings_bin_size = 2 * prompt_embeddings_size
     latents_bin_size = 2 * latents_size
     data_bin_size = prompt_embeddings_bin_size + latents_bin_size
+    print(f'key bin len={len(key_bin)} - data size={data_bin_size} ({prompt_embeddings_bin_size}+{latents_bin_size})')
     data =  unpack_binary_key_into_binary_float_array(key_bin, data_size=data_bin_size)
     prompt_embeddings = convert_bin_key_to_float_array(data[:prompt_embeddings_bin_size],)
     # specific values

@@ -17,5 +17,6 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
 def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor) -> bytes:
     embeddings_data = embeddings.flatten().detach().cpu().numpy()
     pack_floats
+    # TODO
     return
 
