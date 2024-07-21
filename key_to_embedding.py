@@ -62,6 +62,41 @@ def convert_float_to_15_bits(float_value: int):
     return datum
 
 def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)*2+4*52*80*2) -> bytes:
+    unpacked_bytes = bytearray(data_size * [0])
+    #
+    extra_bits = 0
+    nb_extra_bits = 0
+    is_8_bits = True
+    unpacked_i = 0
+    for byte in key_bin:
+        unpacked_byte = ((byte << nb_extra_bits) | extra_bits) & 0xff
+        unpacked_bytes[unpacked_i] = unpacked_byte
+        unpacked_i += 1
+        if(is_8_bits):
+            extra_bits = byte >> (8 - nb_extra_bits)
+            if(nb_extra_bits >= 7):
+                unpacked_bytes[unpacked_i] = extra_bits & 0x7f
+                unpacked_i += 1
+                extra_bits = (extra_bits >> 7) & 1
+                nb_extra_bits = nb_extra_bits - 7
+        else:
+            unpacked_bytes[unpacked_i-1] &= 0x7f
+            nb_extra_bits = nb_extra_bits + 1
+            extra_bits = (byte >> (7 - nb_extra_bits)) & 0xff
+        is_8_bits = not is_8_bits
+    #
+    for i in range(6):
+        print(f'{unpacked_bytes[i]:08b}')
+    #
+    for value_i in range(data_size // 2):
+        datum = (unpacked_bytes[2 * value_i + 1] << 8) | unpacked_bytes[2 * value_i]
+        datum = convert_exponent_to_5_bits(datum)
+        print(f'datum={datum:016b} - {datum:f}')
+        unpacked_bytes[2 * value_i + 1] = (datum >> 8) & 0xff
+        unpacked_bytes[2 * value_i] = datum & 0xff
+    #
+    return unpacked_bytes
+    #
     data = bytearray(data_size * [0])
     datum = 0
     datum_bit_i = 0
@@ -106,7 +141,7 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
     for array_value in array_data:
         print(f'arrayv={array_value:016b}')
         packed_binary_value = convert_float_to_15_bits(array_value)
-        packed_binary_value = (packed_binary_value & 0xff)
+        packed_binary_value = (packed_binary_value & 0x7fff)
         print(f'adding={packed_binary_value:015b}')
         # 1st bit
         shift_len = datum_bit_i
@@ -144,10 +179,10 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
 
 
 
-def convert_bin_key_to_float_array(data: bytes) -> bytes:
+def convert_bin_key_to_float_array(data: bytes, endian='<') -> bytes:
     data_size = len(data)
     nb_floats = data_size // 2
-    float_array = struct.unpack(f'>{nb_floats}e', data)
+    float_array = struct.unpack(f'{endian}{nb_floats}e', data)
     float_array = np.array(float_array, dtype=np.float16)
     return float_array
 
