@@ -33,6 +33,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- unpack might be bugged stupid me believing chatgpt
 - initial image: set it up
 - clip exponent (not too low)
 - so far generated images are a bit boring
