@@ -36,9 +36,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-
-- promtp kindof work but its not a dog?
-- in normal key latents should have different exponent bias (-14 to 1 instaed of -12 to 3)
+- image is not related to prompt ?
+- cant decrease value of latents without loosing relevant bits (maybe reorganise key system)
 - prompt still doesnt work
 - so far generated images are a bit boring
 - convert text prompt to key :)
@@ -47,6 +46,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 ## done
 
+- in normal key latents should have different exponent bias (-14 to 1 instaed of -12 to 3)
+- promtp kindof work but its not a dog?
 - new bug unlocked: random exactly 2 difference in exactly one component between orig vector and its re-conversion
   specifically (seems to) happen(s) when the original data is 0. which gets converted into 2. (one bit bug?)
   bad solution: replace 0. wuth the smallest number possible
