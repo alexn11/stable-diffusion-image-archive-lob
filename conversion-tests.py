@@ -39,6 +39,10 @@ for i in packed:
     print(f'{i:08b}')
 assert(np.allclose(x, y, atol=0.01))
 
+x = np.array([11.,12.,13., -11., 2., 9.25, ], dtype=np.float16)
+check_pack_and_unpack(x)
+
+
 for array_len in range(19):
     print(f'🪰️🪰️ array len = {array_len}')
     data_size = array_len * 2

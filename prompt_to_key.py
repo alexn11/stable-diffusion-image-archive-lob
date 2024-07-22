@@ -5,6 +5,12 @@ import torch
 
 from key_to_embedding import pack_float_array_into_binary_key
 
+# smallest representable number under this 15 bits system
+#  note: 0 cant be represented under the system
+smallest_number = 2**-12 
+# largest abs value
+largest_positive_number = 8.+4+2+1+1/2+1/4+1/8+1/16+1/32+1/64+1/128
+
 def compute_prompt_embedding(pipe: DiffusionPipeline,
                              prompt: str,
                              device='cuda',
@@ -16,6 +22,9 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                                         num_images_per_prompt,
                                         do_classifier_free_guidance,
                                         None)
+    prompt_embeds[prompt_embeds == 0.] = smallest_number
+    prompt_embeds[prompt_embeds > largest_positive_number] = largest_positive_number
+    prompt_embeds[prompt_embeds < -largest_positive_number] = -largest_positive_number
     return prompt_embeds
 
 def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor,
