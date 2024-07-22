@@ -46,7 +46,7 @@ def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor,
         floats_data = embeddings_data
     else:
         if(latents is None):
-            latents = torch.randn(size=latents_shape, dtype=torch.float16)
+            latents = 16. * torch.randn(size=latents_shape, dtype=torch.float16)
         latents_data = latents.flatten().detach().cpu().numpy()
         floats_data = np.concatenate([ embeddings_data, latents_data, ])
     binary_key = pack_float_array_into_binary_key(floats_data)

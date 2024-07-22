@@ -89,7 +89,7 @@ def key_to_image(key: str,
                                                               latents_size=reduce(lambda x,y:x*y, latents_shape))
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape) / 4.
     num_channels_latents = pipe.unet.config.in_channels
 
     #if(seed_image is None):
