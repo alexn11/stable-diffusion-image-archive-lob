@@ -1,5 +1,9 @@
+import numpy as np
+
 from diffusers import DiffusionPipeline
 import torch
+
+from key_to_embedding import pack_float_array_into_binary_key
 
 def compute_prompt_embedding(pipe: DiffusionPipeline,
                              prompt: str,
@@ -14,9 +18,14 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                                         None)
     return prompt_embeds
 
-def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor) -> bytes:
+def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor,
+                                           latents: torch.Tensor | None = None,
+                                           latents_size=80*52*4) -> bytes:
     embeddings_data = embeddings.flatten().detach().cpu().numpy()
-    pack_floats
-    # TODO
-    return
+    if(latents is None):
+        latents = 16. * torch.randn(size=latents_size,)
+    latents_data = latents.detach().cpu().numpy()
+    floats_data = np.concatenate([ embeddings_data, latents_data, ])
+    binary_key = pack_float_array_into_binary_key(floats_data)
+    return binary_key
 

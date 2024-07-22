@@ -7,6 +7,7 @@ from diffusers.utils.testing_utils import enable_full_determinism
 
 from prepare_model import prepare_config, prepare_model
 from key_to_embedding import generate_random_key_base64, compute_embedding_and_latents_from_key
+from prompt_to_key import compute_prompt_embedding, convert_embedding_tensor_to_binary_key
 
 arg_parser = argparse.ArgumentParser()
 #arg_parser.add_argument('prompt', type=str, default='this is the default prompt')
@@ -53,8 +54,9 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
 
-
-if(key_file_path != ''):
+if(prompt != ''):
+    keys = []
+elif(key_file_path != ''):
     with open(key_file_path, 'r') as key_file:
         key = key_file.read().strip()
     keys =  [ key, ]
@@ -171,6 +173,15 @@ pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
 #pipe_generator = None
 pipe = prepare_model(model_name, dtype, device, )
 
+if(prompt != ''):
+    prompt_embeddings = compute_prompt_embedding(pipe=pipe,
+                                                 prompt=prompt,
+                                                 device=device,
+                                                 num_images_per_prompt=num_images_per_prompt,)
+    prompt_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
+                                                        latents_size=80*52*4)
+    keys = [ prompt_key, ]
+
 """
 vae_scale_factor = pipe.vae_scale_factor
 num_channels = pipe.unet.config.in_channels
@@ -186,9 +197,9 @@ latents = prepare_latents(batch_size=batch_size,
                           vae_scale_factor=vae_scale_factor,
                           generator=generator)
 """
-                          
+      
 for key_i, key in enumerate(keys):
-    print(f'key len={len(key)}')
+    #print(f'key len={len(key)}')
     image = key_to_image(key=key, pipe=pipe, generator=pipe_generator)
     image[0].show()
     if(parsed_args.output != ''):

@@ -224,7 +224,7 @@ def compute_embedding_and_latents_from_key(key: str|None = None,
     prompt_embeddings_bin_size = 2 * prompt_embeddings_size
     latents_bin_size = 2 * latents_size
     data_bin_size = prompt_embeddings_bin_size + latents_bin_size
-    print(f'key bin len={len(key_bin)} - data size={data_bin_size} ({prompt_embeddings_bin_size}+{latents_bin_size})')
+    #print(f'key bin len={len(key_bin)} - data size={data_bin_size} ({prompt_embeddings_bin_size}+{latents_bin_size})')
     data =  unpack_binary_key_into_binary_float_array(key_bin, data_size=data_bin_size)
     prompt_embeddings = convert_bin_key_to_float_array(data[:prompt_embeddings_bin_size],)
     # specific values
