@@ -8,7 +8,7 @@ from diffusers.utils.testing_utils import enable_full_determinism
 
 from prepare_model import prepare_config, prepare_model
 from key_to_embedding import generate_random_key_base64, compute_embedding_and_latents_from_key
-from prompt_to_key import compute_prompt_embedding, convert_embedding_tensor_to_binary_key
+from prompt_to_key import generate_key_from_prompt
 
 arg_parser = argparse.ArgumentParser()
 #arg_parser.add_argument('prompt', type=str, default='this is the default prompt')
@@ -177,22 +177,14 @@ pipe = prepare_model(model_name, dtype, device, )
 
 if(prompt != ''):
     print('computing keys for prompt')
-    prompt_embeddings = compute_prompt_embedding(pipe=pipe,
-                                                 prompt=prompt,
-                                                 device=device,
-                                                 num_images_per_prompt=num_images_per_prompt,)
-    assert(prompt_embeddings.shape == (2,77,768))
-    prompt_embeddings = prompt_embeddings[0]
-    print(f'19={prompt_embeddings.flatten()[19]} == -28.078125 ?')
-    print(f'681={prompt_embeddings.flatten()[681]} == 33.09375 ?')
-    prompt_only_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
-                                                             latents=None,
-                                                             latents_shape=None)
-    prompt_and_latents_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
-                                                                    latents_shape=(1,4,52,80))
-    key = base64.b64encode(bytes(prompt_and_latents_key)).decode('utf-8')
-    print(f'prompt={len(prompt_only_key)} - with lat={len(prompt_and_latents_key)} - encoded: {len(key)}')
-    keys = [ key, ]
+    keys = [
+        generate_key_from_prompt(prompt=prompt,
+                                 pipe=pipe,
+                                 device=device,
+                                 num_images_per_prompt=num_images_per_prompt,
+                                 latents=None)
+        for k in range(nb_keys)
+    ]
 
 """
 vae_scale_factor = pipe.vae_scale_factor

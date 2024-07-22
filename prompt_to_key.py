@@ -1,9 +1,13 @@
+import base64
+
 import numpy as np
 
 from diffusers import DiffusionPipeline
 import torch
 
 from key_to_embedding import pack_float_array_into_binary_key
+
+
 
 # smallest representable number under this 15 bits system
 #  note: 0 cant be represented under the system
@@ -48,3 +52,26 @@ def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor,
     binary_key = pack_float_array_into_binary_key(floats_data)
     return binary_key
 
+
+def generate_key_from_prompt(prompt: str,
+                             pipe: DiffusionPipeline = None,
+                             device: str = 'cuda',
+                             num_images_per_prompt=1,
+                             latents=None) -> str:
+    prompt_embeddings = compute_prompt_embedding(pipe=pipe,
+                                                 prompt=prompt,
+                                                 device=device,
+                                                 num_images_per_prompt=num_images_per_prompt,)
+    assert(prompt_embeddings.shape == (2,77,768))
+    prompt_embeddings = prompt_embeddings[0]
+    prompt_embeddings[0, 19] = -28.078125
+    prompt_embeddings[0, 681] = 33.09375
+    #prompt_only_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
+    #                                                         latents=None,
+    #                                                         latents_shape=None)
+    prompt_and_latents_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
+                                                                    latents_shape=(1,4,52,80),
+                                                                    latents=latents)
+    key = base64.b64encode(bytes(prompt_and_latents_key)).decode('utf-8')
+    #print(f'prompt={len(prompt_only_key)} - with lat={len(prompt_and_latents_key)} - encoded: {len(key)}')
+    return key

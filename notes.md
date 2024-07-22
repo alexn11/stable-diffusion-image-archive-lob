@@ -33,11 +33,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-- new bug unlocked: random exactly 2 difference in exactly one component between orig vector and its re-conversion
-  specifically (seems to) happen(s) when the original data is 0. which gets converted into 2. (one bit bug?)
-  bad solution: replace 0. wuth the smallest number possible
-  actually its not a bug its a feature (i remember now)
-  so yeah use bad solution
+
 - prompt still doesnt work
 - so far generated images are a bit boring
 - convert text prompt to key :)
@@ -46,6 +42,11 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 ## done
 
+- new bug unlocked: random exactly 2 difference in exactly one component between orig vector and its re-conversion
+  specifically (seems to) happen(s) when the original data is 0. which gets converted into 2. (one bit bug?)
+  bad solution: replace 0. wuth the smallest number possible
+  actually its not a bug its a feature (i remember now)
+  so yeah use bad solution
 - sorted annoying binary conversion functions bugs
 - there is an issue with the last bits in the key
 - there is an issue with key length
