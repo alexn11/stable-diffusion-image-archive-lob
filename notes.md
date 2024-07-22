@@ -33,6 +33,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- new bug unlocked: random exactly 2 difference in exactly one component between orig vector and its re-conversion
 - prompt still doesnt work
 - so far generated images are a bit boring
 - convert text prompt to key :)

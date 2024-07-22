@@ -191,7 +191,7 @@ if(prompt != ''):
                                                              latents_shape=None)
     prompt_and_latents_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
                                                                     latents_shape=(1,4,52,80))
-    key =  base64.b64encode(bytes(prompt_and_latents_key)).decode('utf-8')
+    key = base64.b64encode(bytes(prompt_and_latents_key)).decode('utf-8')
     print(f'prompt={len(prompt_only_key)} - with lat={len(prompt_and_latents_key)} - encoded: {len(key)}')
     keys = [ key, ]
 
