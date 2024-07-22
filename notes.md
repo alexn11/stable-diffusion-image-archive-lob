@@ -33,6 +33,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- prompt still doesnt work
 - so far generated images are a bit boring
 - convert text prompt to key :)
 - 120 inference steps is a good number
