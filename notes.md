@@ -3,7 +3,7 @@
 ```bash
 python key_to_image.py
 python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
-python key_to_image.py --prompt "a nice ice cream" --num-inference-steps 40 --nb-keys 4
+python key_to_image.py --prompt "a nice ice cream" --num-inference-steps 36 --nb-keys 4
 python key_to_image.py --num-inference-steps 12 --nb-keys 4
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
