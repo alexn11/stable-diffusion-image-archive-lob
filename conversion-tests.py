@@ -7,9 +7,9 @@ from key_to_embedding import generate_random_key_base64, convert_key_to_binary
 
 
 def pack_and_unpack(x: np.ndarray):
-    packed = pack_float_array_into_binary_key(x)
-    unpacked = unpack_binary_key_into_binary_float_array(packed, data_size=len(x)*2)
-    y = convert_bin_key_to_float_array(unpacked, endian='<')
+    packed = pack_float_array_into_binary_key(x, dbg=True)
+    unpacked = unpack_binary_key_into_binary_float_array(packed, data_size=len(x)*2, dbg=True)
+    y = convert_bin_key_to_float_array(unpacked, endian='<', dbg=True)
     return y, unpacked, packed
 
 def show_binary_data(data: bytes):
@@ -44,12 +44,12 @@ for array_len in range(19):
     data_size = array_len * 2
     generated_key = generate_random_key_base64(array_len)
     print(f'generated key="{generated_key}" - {data_size} -> {len(generated_key)}')
-    key_bin = convert_key_to_binary(generated_key, nb_bits_target=array_len * 15)
+    key_bin = convert_key_to_binary(generated_key, nb_bits_target=array_len * 15, dbg=True)
     print(f'bin key len={len(key_bin)}')
-    unpacked = unpack_binary_key_into_binary_float_array(key_bin, data_size=data_size)
+    unpacked = unpack_binary_key_into_binary_float_array(key_bin, data_size=data_size, dbg=True)
     print(f'unpacked: {len(unpacked)}')
     print(unpacked)
-    y = convert_bin_key_to_float_array(unpacked, endian='<')
+    y = convert_bin_key_to_float_array(unpacked, endian='<', dbg=True)
     print(y)
     assert(len(y) == array_len)
 

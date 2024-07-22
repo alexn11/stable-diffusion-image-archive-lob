@@ -8,7 +8,7 @@ import numpy as np
 
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-def generate_random_key_base64(nb_shorts_target: int = 151552) -> str:
+def generate_random_key_base64(nb_shorts_target: int = 151552, dbg=False) -> str:
     #def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
     # 110880 == 77 * 768 * 15 / 8
     nb_bits = nb_shorts_target * 15
@@ -39,7 +39,7 @@ def generate_random_key_base64(nb_shorts_target: int = 151552) -> str:
     base64_key += padding
     return base64_key
 
-def convert_key_to_binary(key: str, nb_bits_target: int | None = None) -> bytes:
+def convert_key_to_binary(key: str, nb_bits_target: int | None = None, dbg=False) -> bytes:
     try:
         bin_key = base64.b64decode(key)
     except:
@@ -82,7 +82,9 @@ def convert_float_to_15_bits(float_value: int):
     #print(f'cv={datum:016b}')
     return datum
 
-def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)*2+4*52*80*2) -> bytes:
+def unpack_binary_key_into_binary_float_array(key_bin: bytes,
+                                              data_size=(77*768)*2+4*52*80*2,
+                                              dbg=False) -> bytes:
     unpacked_bytes = bytearray(data_size * [0])
     #
     extra_bits = 0
@@ -91,12 +93,12 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
     unpacked_i = 0
     key_byte_i = 0
     for byte in key_bin:
-        dbg_key = '8' if(is_8_bits) else '7'
-        print(f'({dbg_key}): input={byte:08b}')
+        #dbg_key = '8' if(is_8_bits) else '7'
+        #print(f'({dbg_key}): input={byte:08b}')
         unpacked_byte = ((byte << nb_extra_bits) | extra_bits) & 0xff
         try:
             unpacked_bytes[unpacked_i] = unpacked_byte
-            print(f'({dbg_key}-T) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
+            #print(f'({dbg_key}-T) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
         except IndexError:
             print(f'key byte:{key_byte_i} ({len(key_bin)}) - unpacked: {unpacked_i} ({data_size})')
             raise
@@ -107,50 +109,49 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
         if(is_8_bits):
             extra_bits_shift_len = 8 - nb_extra_bits
             extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
-            extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
-            print('\n')
-            print(f'(8) extra={extra_bits_str} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
-            #print(f'(8) extra={extra_bits:08b} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
+            #extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
+            #print('\n')
+            #print(f'(8) extra={extra_bits_str} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
             if(nb_extra_bits >= 7):
                 unpacked_bytes[unpacked_i] = extra_bits
-                print('\n')
-                print(f'(7-) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
+                #print('\n')
+                #print(f'(7-) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
                 unpacked_i += 1
                 if(unpacked_i == data_size):
                     print(f'reached padding at {key_byte_i} ({len(key_bin)})')
                     break
                 extra_bits = (extra_bits >> 7) & 1
                 nb_extra_bits = nb_extra_bits - 7
-                print(f'(7+) extra={extra_bits:08b} - nb={nb_extra_bits} - len=1')
+                #print(f'(7+) extra={extra_bits:08b} - nb={nb_extra_bits} - len=1')
                 is_8_bits = not is_8_bits
         else:
             unpacked_bytes[unpacked_i-1] &= 0x7f
-            print(f'(7) unpacked byte: {unpacked_bytes[unpacked_i-1]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
+            #print(f'(7) unpacked byte: {unpacked_bytes[unpacked_i-1]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
             nb_extra_bits = nb_extra_bits + 1
             extra_bits_shift_len = 8 - nb_extra_bits
             extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
-            extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
-            print(f'(7) extra={extra_bits_str}  - nb={nb_extra_bits} - len={extra_bits_shift_len}')
+            #extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
+            #print(f'(7) extra={extra_bits_str}  - nb={nb_extra_bits} - len={extra_bits_shift_len}')
         is_8_bits = not is_8_bits
         key_byte_i += 1
         if(unpacked_i == data_size):
             print(f'reached padding at {key_byte_i} ({len(key_bin)})')
             break
     #
-    print('unpacked bytes:')
-    for i in range(data_size):
-        print(f'{unpacked_bytes[i]:08b}')
+    #print('unpacked bytes:')
+    #for i in range(data_size):
+    #    print(f'{unpacked_bytes[i]:08b}')
     #
     for value_i in range(data_size // 2):
         datum = (unpacked_bytes[2 * value_i + 1] << 8) | unpacked_bytes[2 * value_i]
         datum = convert_exponent_to_5_bits(datum)
-        print(f'datum={datum:016b}')
+        #print(f'datum={datum:016b}')
         unpacked_bytes[2 * value_i + 1] = (datum >> 8) & 0xff
         unpacked_bytes[2 * value_i] = datum & 0xff
     #
     return unpacked_bytes
 
-def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
+def pack_float_array_into_binary_key(float16_array: np.ndarray, dbg=False) -> bytes:
     array_len = len(float16_array)
     #array_size_bytes = array_len * 2
     array_data = struct.unpack(f'{array_len}h', bytes(float16_array.data))
@@ -163,49 +164,49 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
     data_byte_i = 0
     datum_bit_i = 0
     current_datum = 0
-    print(f'current={current_datum:08b} - bit_i={datum_bit_i}')
+    #print(f'current={current_datum:08b} - bit_i={datum_bit_i}')
     for array_value in array_data:
-        print(f'arrayv={array_value:016b}')
+        #print(f'arrayv={array_value:016b}')
         packed_binary_value = convert_float_to_15_bits(array_value)
         packed_binary_value = (packed_binary_value & 0x7fff)
-        print(f'adding={packed_binary_value:015b}')
+        #print(f'adding={packed_binary_value:015b}')
         # 1st bit
         shift_len = datum_bit_i
         mask_len = 8 - datum_bit_i
         mask = (1 << mask_len) - 1
         current_datum |= (packed_binary_value & mask) << shift_len
         packed_binary_value = (packed_binary_value >> mask_len)
-        print(f'current(0)={current_datum:08b}')
+        #print(f'current(0)={current_datum:08b}')
         packed_data[data_byte_i] = current_datum
         data_byte_i += 1
         # 2nd bit
         current_datum = packed_binary_value & 0xff
-        print(f'current(1)={current_datum:08b}')
+        #print(f'current(1)={current_datum:08b}')
         if(datum_bit_i != 0):
             packed_data[data_byte_i] = current_datum
             data_byte_i += 1
             packed_binary_value = (packed_binary_value >> 8) & 0xff
             current_datum = 0
-            print(f'current(2)={current_datum:08b}')
+            #print(f'current(2)={current_datum:08b}')
         else:
             current_datum &= 0x7f
-            print(f'current(1+)={current_datum:08b}')
+            #print(f'current(1+)={current_datum:08b}')
         # 3rd bit
         if(datum_bit_i not in [0, 1]):
             mask_len = datum_bit_i - 1
             mask = (1 << mask_len) - 1
             current_datum = packed_binary_value & mask
-            print(f'current(2+)={current_datum:08b}')
+            #print(f'current(2+)={current_datum:08b}')
         datum_bit_i = (datum_bit_i - 1) % 8
-        print(f'bit_i={datum_bit_i}')
+        #print(f'bit_i={datum_bit_i}')
     if(datum_bit_i > 0):
-        print(f'last extra={current_datum:08b}')
+        #print(f'last extra={current_datum:08b}')
         packed_data[data_byte_i] = current_datum
         data_byte_i += 1
     return packed_data
 
 
-def convert_bin_key_to_float_array(data: bytes, endian='<') -> bytes:
+def convert_bin_key_to_float_array(data: bytes, endian='<', dbg=False) -> bytes:
     data_size = len(data)
     nb_floats = data_size // 2
     float_array = struct.unpack(f'{endian}{nb_floats}e', data)
