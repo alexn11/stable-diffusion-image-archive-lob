@@ -34,7 +34,6 @@ del(config_dict['check_determinism'])
 #del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
 del(config_dict['output'])
-del(config_dict['prompt'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -55,17 +54,20 @@ nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
 
 if(prompt != ''):
+    print(f'using key generated from prompt "{prompt}"')
     keys = []
 elif(key_file_path != ''):
+    print(f'using key from file "{key_file_path}"')
     with open(key_file_path, 'r') as key_file:
         key = key_file.read().strip()
     keys =  [ key, ]
     if(parsed_args.check_determinism):
         keys = [ key, key, key ]
 else:
+    print(f'generating {nb_keys} keys')
     keys = [ generate_random_key_base64(77*768+4*52*80) for i in range(nb_keys) ]
-    for k in keys:
-        print(f'{len(k)}')
+    #for k in keys:
+    #    print(f'{len(k)}')
 #array_key = compute_embedding_from_key(key)
 #prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
 #assert(-1e-6 < prompt_embeds[0,19].item() + 28.078125 < 1e-6)
@@ -174,12 +176,15 @@ pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
 pipe = prepare_model(model_name, dtype, device, )
 
 if(prompt != ''):
+    print('computing keys for prompt')
     prompt_embeddings = compute_prompt_embedding(pipe=pipe,
                                                  prompt=prompt,
                                                  device=device,
                                                  num_images_per_prompt=num_images_per_prompt,)
+    print(f'19={prompt_embeddings.flatten()[19]}')
+    print(f'681={prompt_embeddings.flatten()[681]}')
     prompt_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
-                                                        latents_size=80*52*4)
+                                                        latents_shape=(1,4,52,80))
     keys = [ prompt_key, ]
 
 """
