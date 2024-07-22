@@ -76,7 +76,6 @@ else:
 #prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
 #assert(prompt_embeds.shape == (2,77,768))
 
-
 def key_to_image(key: str,
                  pipe: DiffusionPipeline,
                  generator: torch.Generator = None,

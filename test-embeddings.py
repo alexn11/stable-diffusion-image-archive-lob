@@ -9,12 +9,14 @@ from key_to_embedding import compute_embedding_and_latents_from_key
 from key_to_embedding import convert_key_to_binary
 from key_to_embedding import unpack_binary_key_into_binary_float_array
 from key_to_embedding import convert_bin_key_to_float_array
+from prompt_to_key import normalise_numbers
 
 
 
 for size in range(9,243):
     print(f'checking size {size}')
-    prompt_embeddings = torch.randn(size=(size, ), dtype=torch.float16)
+    prompt_embeddings = 12.0 * torch.randn(size=(size, ), dtype=torch.float16)
+    prompt_embeddings = normalise_numbers(prompt_embeddings)
 
     binary_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
                                         latents=None,

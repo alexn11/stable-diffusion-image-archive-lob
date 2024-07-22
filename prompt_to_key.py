@@ -11,6 +11,15 @@ smallest_number = 2**-12
 # largest abs value
 largest_positive_number = 8.+4+2+1+1/2+1/4+1/8+1/16+1/32+1/64+1/128
 
+
+def normalise_numbers(x: torch.Tensor):
+    x[torch.abs(x) < smallest_number] = smallest_number
+    x[x > largest_positive_number] = largest_positive_number
+    x[x < -largest_positive_number] = -largest_positive_number
+    return x
+
+
+
 def compute_prompt_embedding(pipe: DiffusionPipeline,
                              prompt: str,
                              device='cuda',
@@ -22,9 +31,7 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                                         num_images_per_prompt,
                                         do_classifier_free_guidance,
                                         None)
-    prompt_embeds[prompt_embeds == 0.] = smallest_number
-    prompt_embeds[prompt_embeds > largest_positive_number] = largest_positive_number
-    prompt_embeds[prompt_embeds < -largest_positive_number] = -largest_positive_number
+    prompt_embeds = normalise_numbers(prompt_embeds)
     return prompt_embeds
 
 def convert_embedding_tensor_to_binary_key(embeddings: torch.Tensor,
