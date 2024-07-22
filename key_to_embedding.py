@@ -8,11 +8,10 @@ import numpy as np
 
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
+def generate_random_key_base64(nb_shorts_target: int = 151552) -> str:
+    #def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
     # 110880 == 77 * 768 * 15 / 8
-    nb_bits_orig = nb_bytes * 8
-    nb_bits = (nb_bits_orig * 15) // 16
-    nb_bits += (nb_bits_orig * 15 ) % 16
+    nb_bits = nb_shorts_target * 15
     length = nb_bits // 6
     nb_extra_bits = nb_bits % 6
     base64_key = ''.join([ random.choice(base64_characters) for i in range(length) ])
@@ -21,11 +20,26 @@ def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
             extra_bits = ''
         case 2:
             extra_bits = random.choice(base64_characters[:4])
+        case 3: # only possible case (with 0) in the current form
+            extra_bits = random.choice(base64_characters[:8])
         case 4:
             extra_bits = random.choice(base64_characters[:16])
-    return base64_key + extra_bits
+        case _:
+            print(f'nb extra bits:{nb_extra_bits} ??')
+    base64_key += extra_bits
+    match(len(base64_key) % 4):
+        case 0:
+            padding = ''
+        case 1:
+            padding = base64_characters[0] * 3
+        case 2:
+            padding = base64_characters[0] * 2
+        case 3:
+            padding = base64_characters[0]
+    base64_key += padding
+    return base64_key
 
-def convert_key_to_binary(key: str) -> bytes:
+def convert_key_to_binary(key: str, nb_bits_target: int | None = None) -> bytes:
     try:
         bin_key = base64.b64decode(key)
     except:
@@ -39,6 +53,11 @@ def convert_key_to_binary(key: str) -> bytes:
                     bin_key = base64.b64decode(key + '===')
                 except:
                     raise
+    if(nb_bits_target != None):
+        nb_bytes = nb_bits_target // 8
+        if((nb_bits_target % 8) > 0):
+            nb_bytes += 1
+        bin_key = bin_key[:nb_bytes]
     # https://stackoverflow.com/questions/73089007/invalid-base64-encoded-string-number-of-data-characters-13-cannot-be-1-more-t
     return bin_key
 
@@ -70,30 +89,62 @@ def unpack_binary_key_into_binary_float_array(key_bin: bytes, data_size=(77*768)
     nb_extra_bits = 0
     is_8_bits = True
     unpacked_i = 0
+    key_byte_i = 0
     for byte in key_bin:
+        dbg_key = '8' if(is_8_bits) else '7'
+        print(f'({dbg_key}): input={byte:08b}')
         unpacked_byte = ((byte << nb_extra_bits) | extra_bits) & 0xff
-        unpacked_bytes[unpacked_i] = unpacked_byte
+        try:
+            unpacked_bytes[unpacked_i] = unpacked_byte
+            print(f'({dbg_key}-T) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
+        except IndexError:
+            print(f'key byte:{key_byte_i} ({len(key_bin)}) - unpacked: {unpacked_i} ({data_size})')
+            raise
         unpacked_i += 1
+        if(unpacked_i == data_size):
+            print(f'reached padding at {key_byte_i} ({len(key_bin)})')
+            break
         if(is_8_bits):
-            extra_bits = byte >> (8 - nb_extra_bits)
+            extra_bits_shift_len = 8 - nb_extra_bits
+            extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
+            extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
+            print('\n')
+            print(f'(8) extra={extra_bits_str} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
+            #print(f'(8) extra={extra_bits:08b} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
             if(nb_extra_bits >= 7):
-                unpacked_bytes[unpacked_i] = extra_bits & 0x7f
+                unpacked_bytes[unpacked_i] = extra_bits
+                print('\n')
+                print(f'(7-) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
                 unpacked_i += 1
+                if(unpacked_i == data_size):
+                    print(f'reached padding at {key_byte_i} ({len(key_bin)})')
+                    break
                 extra_bits = (extra_bits >> 7) & 1
                 nb_extra_bits = nb_extra_bits - 7
+                print(f'(7+) extra={extra_bits:08b} - nb={nb_extra_bits} - len=1')
+                is_8_bits = not is_8_bits
         else:
             unpacked_bytes[unpacked_i-1] &= 0x7f
+            print(f'(7) unpacked byte: {unpacked_bytes[unpacked_i-1]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
             nb_extra_bits = nb_extra_bits + 1
-            extra_bits = (byte >> (7 - nb_extra_bits)) & 0xff
+            extra_bits_shift_len = 8 - nb_extra_bits
+            extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
+            extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
+            print(f'(7) extra={extra_bits_str}  - nb={nb_extra_bits} - len={extra_bits_shift_len}')
         is_8_bits = not is_8_bits
+        key_byte_i += 1
+        if(unpacked_i == data_size):
+            print(f'reached padding at {key_byte_i} ({len(key_bin)})')
+            break
     #
-    #for i in range(6):
-    #    print(f'{unpacked_bytes[i]:08b}')
+    print('unpacked bytes:')
+    for i in range(data_size):
+        print(f'{unpacked_bytes[i]:08b}')
     #
     for value_i in range(data_size // 2):
         datum = (unpacked_bytes[2 * value_i + 1] << 8) | unpacked_bytes[2 * value_i]
         datum = convert_exponent_to_5_bits(datum)
-        #print(f'datum={datum:016b}')
+        print(f'datum={datum:016b}')
         unpacked_bytes[2 * value_i + 1] = (datum >> 8) & 0xff
         unpacked_bytes[2 * value_i] = datum & 0xff
     #
@@ -148,6 +199,7 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray) -> bytes:
         datum_bit_i = (datum_bit_i - 1) % 8
         print(f'bit_i={datum_bit_i}')
     if(datum_bit_i > 0):
+        print(f'last extra={current_datum:08b}')
         packed_data[data_byte_i] = current_datum
         data_byte_i += 1
     return packed_data
@@ -167,7 +219,7 @@ def compute_embedding_and_latents_from_key(key: str|None = None,
     if(key is None):
         with open(key_file_path, 'r') as key_file:
             key = key_file.read().strip()
-    key_bin = convert_key_to_binary(key)
+    key_bin = convert_key_to_binary(key, nb_bits_target=(prompt_embeddings_size + latents_size) * 15)
     prompt_embeddings_bin_size = 2 * prompt_embeddings_size
     latents_bin_size = 2 * latents_size
     data_bin_size = prompt_embeddings_bin_size + latents_bin_size

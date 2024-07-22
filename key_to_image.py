@@ -6,7 +6,7 @@ from diffusers import DiffusionPipeline
 from diffusers.utils.testing_utils import enable_full_determinism
 
 from prepare_model import prepare_config, prepare_model
-from key_to_embedding import generate_random_base64, compute_embedding_and_latents_from_key
+from key_to_embedding import generate_random_key_base64, compute_embedding_and_latents_from_key
 
 arg_parser = argparse.ArgumentParser()
 #arg_parser.add_argument('prompt', type=str, default='this is the default prompt')
@@ -61,7 +61,7 @@ if(key_file_path != ''):
     if(parsed_args.check_determinism):
         keys = [ key, key, key ]
 else:
-    keys = [ generate_random_base64((77*768+4*52*80)*2) for i in range(nb_keys) ]
+    keys = [ generate_random_key_base64(77*768+4*52*80) for i in range(nb_keys) ]
     for k in keys:
         print(f'{len(k)}')
 #array_key = compute_embedding_from_key(key)
