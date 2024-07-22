@@ -1,4 +1,5 @@
 import argparse
+import base64
 from functools import reduce
 
 import torch
@@ -181,11 +182,18 @@ if(prompt != ''):
                                                  prompt=prompt,
                                                  device=device,
                                                  num_images_per_prompt=num_images_per_prompt,)
-    print(f'19={prompt_embeddings.flatten()[19]}')
-    print(f'681={prompt_embeddings.flatten()[681]}')
-    prompt_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
-                                                        latents_shape=(1,4,52,80))
-    keys = [ prompt_key, ]
+    assert(prompt_embeddings.shape == (2,77,768))
+    prompt_embeddings = prompt_embeddings[0]
+    print(f'19={prompt_embeddings.flatten()[19]} == -28.078125 ?')
+    print(f'681={prompt_embeddings.flatten()[681]} == 33.09375 ?')
+    prompt_only_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
+                                                             latents=None,
+                                                             latents_shape=None)
+    prompt_and_latents_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
+                                                                    latents_shape=(1,4,52,80))
+    key =  base64.b64encode(bytes(prompt_and_latents_key)).decode('utf-8')
+    print(f'prompt={len(prompt_only_key)} - with lat={len(prompt_and_latents_key)} - encoded: {len(key)}')
+    keys = [ key, ]
 
 """
 vae_scale_factor = pipe.vae_scale_factor

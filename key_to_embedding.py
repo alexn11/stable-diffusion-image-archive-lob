@@ -40,19 +40,7 @@ def generate_random_key_base64(nb_shorts_target: int = 151552, dbg=False) -> str
     return base64_key
 
 def convert_key_to_binary(key: str, nb_bits_target: int | None = None, dbg=False) -> bytes:
-    try:
-        bin_key = base64.b64decode(key)
-    except:
-        try:
-            bin_key = base64.b64decode(key + '=')
-        except:
-            try:
-                bin_key = base64.b64decode(key + '==')
-            except:
-                try:
-                    bin_key = base64.b64decode(key + '===')
-                except:
-                    raise
+    bin_key = base64.b64decode(key.encode('utf-8'))
     if(nb_bits_target != None):
         nb_bytes = nb_bits_target // 8
         if((nb_bits_target % 8) > 0):
