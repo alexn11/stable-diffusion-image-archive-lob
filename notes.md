@@ -2,6 +2,7 @@
 
 ```bash
 python key_to_image.py
+python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
 python key_to_image.py --key-file test-key.txt --num-inference-steps 26
