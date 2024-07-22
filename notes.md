@@ -33,13 +33,15 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-- there is an issue with the last bits in the key
 - so far generated images are a bit boring
 - convert text prompt to key :)
 - 120 inference steps is a good number
 - 76 ?
 
 ## done
+
+- sorted annoying binary conversion functions bugs
+- there is an issue with the last bits in the key
 - there is an issue with key length
 - unpack might be bugged stupid me believing chatgpt
 - initial image: set it up
