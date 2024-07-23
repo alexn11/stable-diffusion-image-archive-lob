@@ -1,5 +1,7 @@
 # normal use
 
+
+## old version pre 2024-07-23
 ```bash
 python key_to_image.py
 python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4

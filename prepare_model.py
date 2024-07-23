@@ -64,14 +64,16 @@ def prepare_latents(batch_size,
                     dtype,
                     device,
                     vae_scale_factor,
-                    generator=None):
+                    generator=None,
+                    debug=False):
     shape_base = (
         batch_size * num_images_per_prompt,
         num_channels_latents,
     )
     latent_height = height // vae_scale_factor
     latent_width = width // vae_scale_factor
-    print(f'latents shape: {shape_base + (latent_height, latent_width)}')
+    if(debug):
+        print(f'latents shape: {shape_base + (latent_height, latent_width)}')
     if(generator is not None):
         latents = torch.randn(shape_base + (latent_height, latent_width),
                               dtype=dtype,

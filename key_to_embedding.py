@@ -3,15 +3,29 @@ import struct
 import numpy as np
 
 from BitStream import BitStream
+from model_constants import data_nb_bits
+from model_constants import nb_padding_chars
+from model_constants import num_inference_steps_nb_bits, num_inference_steps_level_to_counts
+from model_constants import prompt_embeddings_bits_per_value, latents_bits_per_value
+from model_constants import prompt_embeddings_nb_bytes, latents_nb_bytes
+from model_constants import prompt_embeddings_nb_values, latents_nb_values
 from key_strings import convert_key_to_bit_stream
 
 def convert_15_bits_int_to_float16_representation(datum_15_bits: int) -> int:
     #def convert_exponent_to_5_bits(datum: int):
-    exp = (datum & 0b011110000000000) >> 10
+    exp = (datum_15_bits & 0b011110000000000) >> 10
     exp += 3
-    sign = (datum & 0b100000000000000) >> 14
-    datum = (datum & 0b000001111111111) | (exp << 10) | (sign << 15)
+    sign = (datum_15_bits & 0b100000000000000) >> 14
+    datum = (datum_15_bits & 0b000001111111111) | (exp << 10) | (sign << 15)
     return datum
+
+def convert_14_bits_int_to_float16_representation(datum_14_bits: int) -> int:
+    exp = (datum_14_bits & 0b01110000000000) >> 10
+    exp += 1
+    sign = (datum_14_bits & 0b100000000000000) >> 13
+    datum = (datum_14_bits & 0b000001111111111) | (exp << 10) | (sign << 15)
+    return datum
+
 
 def convert_float_to_15_bits(float_value: int):
     exp = (float_value & 0b0111110000000000) >> 10
@@ -26,63 +40,68 @@ def convert_float_to_15_bits(float_value: int):
 
 
 def unpack_num_inference_steps(data_stream: BitStream) -> int:
-    data_stream.set_chunk_size(2)
+    data_stream.set_chunk_size(num_inference_steps_nb_bits)
     num_inference_steps_level = data_stream.get_chunk()
-    num_inference_steps = [ 12, 25, 36, 50 ][num_inference_steps_level]
+    num_inference_steps = num_inference_steps_level_to_counts[num_inference_steps_level]
     return num_inference_steps
 
 
 def unpack_array(data_stream: BitStream,
                  array_type='prompt',
-                 size=None,
+                 size_nb_values=None,
+                 size_bytes=None,
                  debug=False) -> np.ndarray:
-    chunk_size = 15 if(array_type == 'prompt') else 14
-    if(size is None):
-        size = 77*768-2 if(array_type == 'prompt') else 4*52*80 OH NO!
+    chunk_size = prompt_embeddings_bits_per_value if(array_type == 'prompt') else latents_bits_per_value
+    if(size_nb_values is None):
+        size_nb_values = prompt_embeddings_nb_values if(array_type == 'prompt') else latents_nb_values
+    if(size_bytes is None):
+        size_bytes = prompt_embeddings_nb_bytes if(array_type == 'prompt') else latents_nb_bytes
     data_stream.set_chunk_size(chunk_size)
-    prompt_embeddings_data = data_stream.get_chunks(size)
-    unpacked_bytes = bytearray(size * [0])
-    for value_i, packed_value in enumerate(prompt_embeddings_data):
-        unpacked_value = convert_15_bits_int_to_float16_representation(packed_value)
+    packed_data = data_stream.get_chunks(size_nb_values)
+    unpacked_bytes = bytearray(size_bytes * [0])
+    for value_i, packed_value in enumerate(packed_data):
+        if(array_type == 'prompt'):
+            unpacked_value = convert_15_bits_int_to_float16_representation(packed_value)
+        else:
+            unpacked_value = convert_14_bits_int_to_float16_representation(packed_value)
         if(debug):
             print(f'unpacked_value={unpacked_value:016b}')
         unpacked_bytes[2 * value_i + 1] = (unpacked_value >> 8) & 0xff
         unpacked_bytes[2 * value_i] = unpacked_value & 0xff
-    prompt_embeddings_floats = struct.unpack(f'<{size}e', bytes(unpacked_bytes))
-    # insert special values
-    prompt_embeddings = prompt_embeddings_floats[:19]
-    prompt_embeddings += [ -28.078125, ]
-    prompt_embeddings += prompt_embeddings_floats[19:680]
-    prompt_embeddings += [ 33.09375, ]
-    prompt_embeddings += prompt_embeddings_floats[680:]
-    return np.array(prompt_embeddings)
+    array_as_list = struct.unpack(f'<{size_nb_values}e', bytes(unpacked_bytes))
+    if(array_type == 'prompt'):
+        # insert special values
+        array_as_list = array_as_list[:19]
+        array_as_list += [ -28.078125, ]
+        array_as_list += array_as_list[19:680]
+        array_as_list += [ 33.09375, ]
+        array_as_list += array_as_list[680:]
+    return np.array(array_as_list)
 
-    
+def unpack_prompt_embeddings(data_stream: BitStream, debug=False) -> np.ndarray:
+    return unpack_array(data_stream,
+                        array_type='prompt',
+                        debug=debug)
+
+def unpack_latents(data_stream: BitStream, debug=False) -> np.ndarray:
+    return unpack_array(data_stream,
+                        array_type='latents',
+                        debug=debug)
 
 def unpack_key(base_64_key: str,
                debug=False, # i would use a logger if setting up the mode you want wasnt so complicated
                ) -> tuple: # int, tensor, tensor
     data_stream = convert_key_to_bit_stream(base_64_key,
                                             start_chunk_size_bits=2,
-                                            data_size_bits=(77*768-2)*15+52*80*14+2)
+                                            data_size_bits=data_nb_bits,
+                                            nb_padding_chars=nb_padding_chars)
     num_inference_steps = unpack_num_inference_steps(data_stream,)
     prompt_embeddings = unpack_prompt_embeddings(data_stream,
-                                                 size=77*768-2,
                                                  debug=debug)
-    #
-    #print('unpacked bytes:')
-    #for i in range(data_size):
-    #    print(f'{unpacked_bytes[i]:08b}')
-    #
-    for value_i in range(data_size // 2):
-        datum = (unpacked_bytes[2 * value_i + 1] << 8) | unpacked_bytes[2 * value_i]
-        datum = convert_exponent_to_5_bits(datum)
-        #print(f'datum={datum:016b}')
-        unpacked_bytes[2 * value_i + 1] = (datum >> 8) & 0xff
-        unpacked_bytes[2 * value_i] = datum & 0xff
-    #
-    return unpacked_bytes
+    latents = unpack_latents(data_stream, debug=debug)
+    return num_inference_steps, prompt_embeddings, latents
 
+# here: TODO - write
 def pack_float_array_into_binary_key(float16_array: np.ndarray, dbg=False) -> bytes:
     array_len = len(float16_array)
     #array_size_bytes = array_len * 2
@@ -136,34 +155,3 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray, dbg=False) -> by
         packed_data[data_byte_i] = current_datum
         data_byte_i += 1
     return packed_data
-
-
-def convert_bin_key_to_float_array(data: bytes, endian='<', dbg=False) -> bytes:
-    data_size = len(data)
-    nb_floats = data_size // 2
-    float_array = struct.unpack(f'{endian}{nb_floats}e', data)
-    float_array = np.array(float_array, dtype=np.float16)
-    return float_array
-
-def compute_embedding_and_latents_from_key(key: str|None = None,
-                                           key_file_path: str|None = None,
-                                           prompt_embeddings_size=77*768,
-                                           latents_size=4*52*80):
-    if(key is None):
-        with open(key_file_path, 'r') as key_file:
-            key = key_file.read().strip()
-    key_bin = convert_key_to_binary(key, nb_bits_target=(prompt_embeddings_size + latents_size) * 15)
-    prompt_embeddings_bin_size = 2 * prompt_embeddings_size
-    latents_bin_size = 2 * latents_size
-    data_bin_size = prompt_embeddings_bin_size + latents_bin_size
-    #print(f'key bin len={len(key_bin)} - data size={data_bin_size} ({prompt_embeddings_bin_size}+{latents_bin_size})')
-    data =  unpack_binary_key_into_binary_float_array(key_bin, data_size=data_bin_size)
-    prompt_embeddings = convert_bin_key_to_float_array(data[:prompt_embeddings_bin_size],)
-    # specific values
-    prompt_embeddings[19] = -28.078125
-    prompt_embeddings[681] = 33.09375
-    #
-    assert(len(prompt_embeddings) == prompt_embeddings_size)
-    latents = convert_bin_key_to_float_array(data[prompt_embeddings_bin_size:])
-    assert(len(latents)==latents_size)
-    return prompt_embeddings, latents

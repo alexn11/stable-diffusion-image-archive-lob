@@ -6,16 +6,19 @@ import torch
 from diffusers import DiffusionPipeline
 from diffusers.utils.testing_utils import enable_full_determinism
 
+from model_constants import data_nb_bits
+from model_constants import prompt_embeddings_shape, latents_shape
 from prepare_model import prepare_config, prepare_model
-from key_to_embedding import generate_random_key_base64, compute_embedding_and_latents_from_key
+from key_strings import generate_random_key_base64
+from key_to_embedding import unpack_key
 from prompt_to_key import generate_key_from_prompt
 
 arg_parser = argparse.ArgumentParser()
-#arg_parser.add_argument('prompt', type=str, default='this is the default prompt')
-arg_parser.add_argument('--width', type=int, default=640)
-arg_parser.add_argument('--height', type=int, default=416)
+arg_parser.add_argument('--prompt', type=str, default='')
+#arg_parser.add_argument('--width', type=int, default=640)
+#arg_parser.add_argument('--height', type=int, default=416)
 arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default='cuda')
-arg_parser.add_argument('--num-inference-steps', type=int, default=50)
+#arg_parser.add_argument('--num-inference-steps', type=int, default=50)
 arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
 arg_parser.add_argument('--nb-keys', type=int, default=8)
 arg_parser.add_argument('--key-file', type=str, default='')
@@ -23,8 +26,8 @@ arg_parser.add_argument('--seed', type=int, default=768)
 arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
 #arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator']) # obsolete
-arg_parser.add_argument('--output', type=str, default='')
-arg_parser.add_argument('--prompt', type=str, default='')
+arg_parser.add_argument('--output-file-name', type=str, default='')
+arg_parser.add_argument('--debug', action='store_true')
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
@@ -34,7 +37,8 @@ del(config_dict['seed'])
 del(config_dict['check_determinism'])
 #del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
-del(config_dict['output'])
+del(config_dict['output-file-name'])
+del(config_dict['debug'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -54,8 +58,11 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
 
+do_debug = parsed_args.debug
+
 if(prompt != ''):
     print(f'using key generated from prompt "{prompt}"')
+    raise NotImplemented(f'needs reimplementing') # TODO
     keys = []
 elif(key_file_path != ''):
     print(f'using key from file "{key_file_path}"')
@@ -66,7 +73,7 @@ elif(key_file_path != ''):
         keys = [ key, key, key ]
 else:
     print(f'generating {nb_keys} keys')
-    keys = [ generate_random_key_base64(77*768+4*52*80) for i in range(nb_keys) ]
+    keys = [ generate_random_key_base64(data_nb_bits) for i in range(nb_keys) ]
     #for k in keys:
     #    print(f'{len(k)}')
 #array_key = compute_embedding_from_key(key)
@@ -81,28 +88,27 @@ def key_to_image(key: str,
                  generator: torch.Generator = None,
                  dtype = torch.float16,
                  device = 'cuda',
-                 prompt_embeddings_shape=(77,768),
-                 latents_shape=(1, 4, 52, 80)):
-    ( prompt_embeds_data,
-      latents_data ) = compute_embedding_and_latents_from_key(key,
-                                                              prompt_embeddings_size=reduce(lambda x,y:x*y, prompt_embeddings_shape),
-                                                              latents_size=reduce(lambda x,y:x*y, latents_shape))
+                 prompt_embeddings_shape=prompt_embeddings_shape,
+                 latents_shape=latents_shape,
+                 debug=False):
+    (
+        num_inference_steps,
+        prompt_embeds_data,
+        latents_data
+    ) = unpack_key(key, debug=debug)
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape) / 4.
+    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
     num_channels_latents = pipe.unet.config.in_channels
 
-    #if(seed_image is None):
-    #    raise Exception('fucked up')
+    if(debug):
+        assert(latents_shape[1] == num_channels_latents)
 
     with torch.no_grad():
         generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
-        #pipe.generator.set_state(generator.get_state())
-        #print(f'PIPE STATE;:{pipe.generator.get_state()}')
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps = pipe.scheduler.timesteps
-        #
-        #
+
         #print(f'before: {seed_image[0][:][0][0]}')
         latents = pipe.prepare_latents(
             batch_size * num_images_per_prompt,
@@ -118,6 +124,7 @@ def key_to_image(key: str,
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
         #
+        # oh this is copy paste from diffusers... TODO: rewrite
         # 7. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * pipe.scheduler.order
         #
@@ -165,10 +172,7 @@ def key_to_image(key: str,
 
 enable_full_determinism()
 
-#if(parsed_args.latents_type == 'fixed-generator'):
-#    generator = torch.Generator(device=device).manual_seed(parsed_args.latents_seed)
-#else:
-#    generator = None
+
 generator = None
 
 pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
@@ -182,7 +186,7 @@ if(prompt != ''):
                                  pipe=pipe,
                                  device=device,
                                  num_images_per_prompt=num_images_per_prompt,
-                                 latents=None)
+                                 latents=None,)
         for k in range(nb_keys)
     ]
 
@@ -204,8 +208,15 @@ latents = prepare_latents(batch_size=batch_size,
       
 for key_i, key in enumerate(keys):
     #print(f'key len={len(key)}')
-    image = key_to_image(key=key, pipe=pipe, generator=pipe_generator)
+    image = key_to_image(key=key,
+                         pipe=pipe,
+                         generator=pipe_generator,
+                         dtype=dtype,
+                         device=device,
+                         prompt_embeddings_shape=prompt_embeddings_shape,
+                         latents_shape=latents_shape,
+                         debug=do_debug)
     image[0].show()
-    if(parsed_args.output != ''):
-        output_file_path = f'{parsed_args.output}-{key_i:03d}.png'
+    if(parsed_args.output_file_name != ''):
+        output_file_path = f'{parsed_args.output_file_name}-{key_i:03d}.png'
         image[0].save(output_file_path)
