@@ -38,7 +38,7 @@ def unpack_array(data_stream: BitStream,
                  debug=False) -> np.ndarray:
     chunk_size = 15 if(array_type == 'prompt') else 14
     if(size is None):
-        size = 77*768-2 if(array_type == 'prompt') else 4*52*80
+        size = 77*768-2 if(array_type == 'prompt') else 4*52*80 OH NO!
     data_stream.set_chunk_size(chunk_size)
     prompt_embeddings_data = data_stream.get_chunks(size)
     unpacked_bytes = bytearray(size * [0])
