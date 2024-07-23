@@ -1,58 +1,12 @@
-import base64
-import random
 import struct
 
 import numpy as np
 
-# key things
+from BitStream import BitStream
+from key_strings import convert_key_to_bit_stream
 
-base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
-def generate_random_key_base64(nb_shorts_target: int = 151552, dbg=False) -> str:
-    #def generate_random_base64(nb_bytes: int = 118268 + 83200) -> str:
-    # 110880 == 77 * 768 * 15 / 8
-    nb_bits = nb_shorts_target * 15
-    length = nb_bits // 6
-    nb_extra_bits = nb_bits % 6
-    base64_key = ''.join([ random.choice(base64_characters) for i in range(length) ])
-    match(nb_extra_bits):
-        case 0:
-            extra_bits = ''
-        case 2:
-            extra_bits = random.choice(base64_characters[:4])
-        case 3: # only possible case (with 0) in the current form
-            extra_bits = random.choice(base64_characters[:8])
-        case 4:
-            extra_bits = random.choice(base64_characters[:16])
-        case _:
-            print(f'nb extra bits:{nb_extra_bits} ??')
-    base64_key += extra_bits
-    match(len(base64_key) % 4):
-        case 0:
-            padding = ''
-        case 1:
-            padding = base64_characters[0] * 3
-        case 2:
-            padding = base64_characters[0] * 2
-        case 3:
-            padding = base64_characters[0]
-    base64_key += padding
-    return base64_key
-
-def convert_key_to_binary(key: str, nb_bits_target: int | None = None, dbg=False) -> bytes:
-    bin_key = base64.b64decode(key.encode('utf-8'))
-    if(nb_bits_target != None):
-        nb_bytes = nb_bits_target // 8
-        if((nb_bits_target % 8) > 0):
-            nb_bytes += 1
-        bin_key = bin_key[:nb_bytes]
-    # https://stackoverflow.com/questions/73089007/invalid-base64-encoded-string-number-of-data-characters-13-cannot-be-1-more-t
-    return bin_key
-
-
-#
-
-def convert_exponent_to_5_bits(datum: int):
+def convert_15_bits_int_to_float16_representation(datum_15_bits: int) -> int:
+    #def convert_exponent_to_5_bits(datum: int):
     exp = (datum & 0b011110000000000) >> 10
     exp += 3
     sign = (datum & 0b100000000000000) >> 14
@@ -70,61 +24,51 @@ def convert_float_to_15_bits(float_value: int):
     #print(f'cv={datum:016b}')
     return datum
 
-def unpack_binary_key_into_binary_float_array(key_bin: bytes,
-                                              data_size=(77*768)*2+4*52*80*2,
-                                              dbg=False) -> bytes:
-    unpacked_bytes = bytearray(data_size * [0])
-    #
-    extra_bits = 0
-    nb_extra_bits = 0
-    is_8_bits = True
-    unpacked_i = 0
-    key_byte_i = 0
-    for byte in key_bin:
-        #dbg_key = '8' if(is_8_bits) else '7'
-        #print(f'({dbg_key}): input={byte:08b}')
-        unpacked_byte = ((byte << nb_extra_bits) | extra_bits) & 0xff
-        try:
-            unpacked_bytes[unpacked_i] = unpacked_byte
-            #print(f'({dbg_key}-T) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
-        except IndexError:
-            print(f'key byte:{key_byte_i} ({len(key_bin)}) - unpacked: {unpacked_i} ({data_size})')
-            raise
-        unpacked_i += 1
-        if(unpacked_i == data_size):
-            print(f'reached padding at {key_byte_i} ({len(key_bin)})')
-            break
-        if(is_8_bits):
-            extra_bits_shift_len = 8 - nb_extra_bits
-            extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
-            #extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
-            #print('\n')
-            #print(f'(8) extra={extra_bits_str} - nb={nb_extra_bits} - len={extra_bits_shift_len}')
-            if(nb_extra_bits >= 7):
-                unpacked_bytes[unpacked_i] = extra_bits
-                #print('\n')
-                #print(f'(7-) unpacked byte: {unpacked_bytes[unpacked_i]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
-                unpacked_i += 1
-                if(unpacked_i == data_size):
-                    print(f'reached padding at {key_byte_i} ({len(key_bin)})')
-                    break
-                extra_bits = (extra_bits >> 7) & 1
-                nb_extra_bits = nb_extra_bits - 7
-                #print(f'(7+) extra={extra_bits:08b} - nb={nb_extra_bits} - len=1')
-                is_8_bits = not is_8_bits
-        else:
-            unpacked_bytes[unpacked_i-1] &= 0x7f
-            #print(f'(7) unpacked byte: {unpacked_bytes[unpacked_i-1]:08b} - extra = {extra_bits} - {"8" if(is_8_bits) else "7"} bits')
-            nb_extra_bits = nb_extra_bits + 1
-            extra_bits_shift_len = 8 - nb_extra_bits
-            extra_bits = (byte >> extra_bits_shift_len) % (1 << nb_extra_bits)
-            #extra_bits_str = f'{extra_bits:08b}'[-nb_extra_bits:]
-            #print(f'(7) extra={extra_bits_str}  - nb={nb_extra_bits} - len={extra_bits_shift_len}')
-        is_8_bits = not is_8_bits
-        key_byte_i += 1
-        if(unpacked_i == data_size):
-            print(f'reached padding at {key_byte_i} ({len(key_bin)})')
-            break
+
+def unpack_num_inference_steps(data_stream: BitStream) -> int:
+    data_stream.set_chunk_size(2)
+    num_inference_steps_level = data_stream.get_chunk()
+    num_inference_steps = [ 12, 25, 36, 50 ][num_inference_steps_level]
+    return num_inference_steps
+
+
+def unpack_array(data_stream: BitStream,
+                 array_type='prompt',
+                 size=None,
+                 debug=False) -> np.ndarray:
+    chunk_size = 15 if(array_type == 'prompt') else 14
+    if(size is None):
+        size = 77*768-2 if(array_type == 'prompt') else 4*52*80
+    data_stream.set_chunk_size(chunk_size)
+    prompt_embeddings_data = data_stream.get_chunks(size)
+    unpacked_bytes = bytearray(size * [0])
+    for value_i, packed_value in enumerate(prompt_embeddings_data):
+        unpacked_value = convert_15_bits_int_to_float16_representation(packed_value)
+        if(debug):
+            print(f'unpacked_value={unpacked_value:016b}')
+        unpacked_bytes[2 * value_i + 1] = (unpacked_value >> 8) & 0xff
+        unpacked_bytes[2 * value_i] = unpacked_value & 0xff
+    prompt_embeddings_floats = struct.unpack(f'<{size}e', bytes(unpacked_bytes))
+    # insert special values
+    prompt_embeddings = prompt_embeddings_floats[:19]
+    prompt_embeddings += [ -28.078125, ]
+    prompt_embeddings += prompt_embeddings_floats[19:680]
+    prompt_embeddings += [ 33.09375, ]
+    prompt_embeddings += prompt_embeddings_floats[680:]
+    return np.array(prompt_embeddings)
+
+    
+
+def unpack_key(base_64_key: str,
+               debug=False, # i would use a logger if setting up the mode you want wasnt so complicated
+               ) -> tuple: # int, tensor, tensor
+    data_stream = convert_key_to_bit_stream(base_64_key,
+                                            start_chunk_size_bits=2,
+                                            data_size_bits=(77*768-2)*15+52*80*14+2)
+    num_inference_steps = unpack_num_inference_steps(data_stream,)
+    prompt_embeddings = unpack_prompt_embeddings(data_stream,
+                                                 size=77*768-2,
+                                                 debug=debug)
     #
     #print('unpacked bytes:')
     #for i in range(data_size):

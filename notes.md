@@ -113,6 +113,7 @@ returns `12.0`
 - prompt_embeds[0, 0, 19] == -28.078125
 - prompt_embeds[0, 0, 681] == 33.09375
 - other values are (normally?) distributed between approx -12 and 13
+- there's no specific indexes that have zero values (0.0 is actually quite rare)
 
 # currently
 

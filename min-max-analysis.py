@@ -4,15 +4,18 @@
 
 from matplotlib import pyplot
 import torch
+import tqdm
+
 from prepare_model import prepare_config, prepare_model
 
 
 def embed_prompt(prompt, device, num_images_per_prompt, do_classifier_free_guidance):
-    prompt_embeds = pipe._encode_prompt(prompt,
-                                        device,
-                                        num_images_per_prompt,
-                                        do_classifier_free_guidance,
-                                        None)
+    with torch.no_grad():
+        prompt_embeds = pipe._encode_prompt(prompt,
+                                            device,
+                                            num_images_per_prompt,
+                                            do_classifier_free_guidance,
+                                            None)
     return prompt_embeds
 
 
@@ -44,18 +47,24 @@ def get_where_special_values(x):
     #masked = torch.where(masked > 0., 1., masked)
     return (torch.argwhere(masked < 0).tolist(), torch.argwhere(masked > 0).tolist())
 
+def get_zero_indexes(x: torch.Tensor) -> torch.Tensor:
+    return torch.argwhere(x == 0.0).detach().cpu()
 
 embed_maxs = []
 embed_mins = []
 where_specials = []
+where_zeros = []
 
 
 with torch.no_grad():
-    for prompt in texts:
+    for prompt in tqdm.tqdm(texts):
         x = embed_prompt(prompt, device, 1, False)
         where_specials.append(get_where_special_values(x))
         #x = torch.where(x > -25, x, 0.0)
         #x = torch.where(x < 30, x, 0.0)
+        zero_indexes = get_zero_indexes(x)
+        if(zero_indexes.shape[0] > 0):
+            where_zeros.append(zero_indexes)
         x = torch.where(x > -28.078124, x, 0.0)
         x = torch.where(x < 33.09374, x, 0.0)
         embed_maxs.append(x.max().item())
@@ -79,6 +88,7 @@ all([t == [[0,0,19]] for t in special_min_indexes])
 all([t == [[0,0,681]] for t in special_max_indexes])
 # -> True
 
+print(where_zeros)
 
 # special values min=-28.078125 - max=33.09375
 # without the special values: min=-11.953125, max=12.703125
