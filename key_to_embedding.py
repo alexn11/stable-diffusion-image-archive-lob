@@ -68,14 +68,23 @@ def unpack_array(data_stream: BitStream,
             print(f'unpacked_value={unpacked_value:016b}')
         unpacked_bytes[2 * value_i + 1] = (unpacked_value >> 8) & 0xff
         unpacked_bytes[2 * value_i] = unpacked_value & 0xff
-    array_as_list = struct.unpack(f'<{size_nb_values}e', bytes(unpacked_bytes))
+    array_as_list = list(struct.unpack(f'<{size_nb_values}e', bytes(unpacked_bytes)))
+    if(debug):
+        print(f'len read={len(array_as_list)}')
     if(array_type == 'prompt'):
         # insert special values
-        array_as_list = array_as_list[:19]
-        array_as_list += [ -28.078125, ]
-        array_as_list += array_as_list[19:680]
-        array_as_list += [ 33.09375, ]
-        array_as_list += array_as_list[680:]
+        array_as_list = (
+            array_as_list[:19]
+              + [ -28.078125, ]
+              + array_as_list[19:680]
+              + [ 33.09375, ]
+              + array_as_list[680:])
+        if(debug):
+            try:
+                assert(len(array_as_list) == 77*768)
+            except AssertionError:
+                print(f'array len={len(array_as_list)} - expected nb values: {size_nb_values}')
+                raise
     return np.array(array_as_list)
 
 def unpack_prompt_embeddings(data_stream: BitStream, debug=False) -> np.ndarray:

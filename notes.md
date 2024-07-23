@@ -1,5 +1,22 @@
 # normal use
 
+```bash
+python key_to_image.py
+# 
+python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
+python key_to_image.py --prompt "a nice ice cream" --num-inference-steps 36 --nb-keys 4
+python key_to_image.py --num-inference-steps 12 --nb-keys 4
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
+python key_to_image.py --key-file test-key.txt --num-inference-steps 26
+python key_to_image.py --nb-keys 4 --num-inference-steps 26
+python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type fixed-generator
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism --latents-type fixed-generator
+python key_to_image.py --nb-keys 4 --num-inference-steps 12 --latents-type blob
+ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-type fixed-generator --output test3
+```
+
+
 
 ## old version pre 2024-07-23
 ```bash
@@ -38,6 +55,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- rewrite the genration loop (its copy paste from diffusers)
+- put it in a function
 - image is not related to prompt ?
 - cant decrease value of latents without loosing relevant bits (maybe reorganise key system)
 - prompt still doesnt work

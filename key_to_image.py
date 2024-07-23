@@ -37,7 +37,7 @@ del(config_dict['seed'])
 del(config_dict['check_determinism'])
 #del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
-del(config_dict['output-file-name'])
+del(config_dict['output_file_name'])
 del(config_dict['debug'])
 
 config = prepare_config(**config_dict)
@@ -73,7 +73,7 @@ elif(key_file_path != ''):
         keys = [ key, key, key ]
 else:
     print(f'generating {nb_keys} keys')
-    keys = [ generate_random_key_base64(data_nb_bits) for i in range(nb_keys) ]
+    keys = [ generate_random_key_base64(data_nb_bits,) for i in range(nb_keys) ]
     #for k in keys:
     #    print(f'{len(k)}')
 #array_key = compute_embedding_from_key(key)
