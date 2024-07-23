@@ -55,6 +55,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- implement pack_data_into_key in key_to_emebddings
 - rewrite the genration loop (its copy paste from diffusers)
 - put it in a function
 - image is not related to prompt ?
