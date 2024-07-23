@@ -9,7 +9,7 @@ from model_constants import num_inference_steps_nb_bits, num_inference_steps_lev
 from model_constants import prompt_embeddings_bits_per_value, latents_bits_per_value
 from model_constants import prompt_embeddings_nb_bytes, latents_nb_bytes
 from model_constants import prompt_embeddings_nb_values, latents_nb_values
-from key_strings import convert_key_to_bit_stream
+from key_strings import convert_key_to_bit_stream, convert_packed_data_to_key
 
 def convert_15_bits_int_to_float16_representation(datum_15_bits: int) -> int:
     #def convert_exponent_to_5_bits(datum: int):
@@ -111,7 +111,12 @@ def unpack_key(base_64_key: str,
     return num_inference_steps, prompt_embeddings, latents
 
 # here: TODO - write
-def pack_float_array_into_binary_key(float16_array: np.ndarray, dbg=False) -> bytes:
+def pack_data_into_key(num_inference_steps: int,
+                       prompt_embeddings: np.ndarray,
+                       latents: np.ndarray,
+                       debug = False,
+                       return_type='key') -> str:
+    # TODO from here (until "below is DONE")
     array_len = len(float16_array)
     #array_size_bytes = array_len * 2
     array_data = struct.unpack(f'{array_len}h', bytes(float16_array.data))
@@ -163,4 +168,7 @@ def pack_float_array_into_binary_key(float16_array: np.ndarray, dbg=False) -> by
         #print(f'last extra={current_datum:08b}')
         packed_data[data_byte_i] = current_datum
         data_byte_i += 1
-    return packed_data
+    # below is DONE:
+    if(return_type != 'jey'):
+        return packed_data
+    return convert_packed_data_to_key(packed_data)

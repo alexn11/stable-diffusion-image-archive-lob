@@ -62,7 +62,6 @@ do_debug = parsed_args.debug
 
 if(prompt != ''):
     print(f'using key generated from prompt "{prompt}"')
-    raise NotImplemented(f'needs reimplementing') # TODO
     keys = []
 elif(key_file_path != ''):
     print(f'using key from file "{key_file_path}"')

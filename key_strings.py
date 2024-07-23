@@ -18,6 +18,12 @@ def generate_random_key_base64(nb_bits: int = data_nb_bits, nb_padding_chars=Non
         base64_key += 'A' * nb_padding_chars
     return base64_key
 
+def convert_packed_data_to_key(data: bytes, nb_padding_chars=None) -> str:
+    key = base64.b64encode(data).decode('utf-8')
+    if(nb_padding_chars is not None):
+        raise NotImplementedError('i wont')
+    return key
+
 def convert_key_to_bit_stream(base_64_key: str,
                               start_chunk_size_bits=15,
                               data_size_bits=data_nb_bits,
