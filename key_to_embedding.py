@@ -112,7 +112,7 @@ def unpack_latents(data_stream: BitStream, debug=False) -> np.ndarray:
 
 def unpack_key(base_64_key: str,
                debug=False, # i would use a logger if setting up the mode you want wasnt so complicated
-               ) -> tuple: # int, tensor, tensor
+               ) -> tuple[int, np.ndarray, np.ndarray]:
     data_stream = convert_key_to_bit_stream(base_64_key,
                                             start_chunk_size_bits=2,
                                             data_size_bits=data_nb_bits,

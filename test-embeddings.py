@@ -1,52 +1,42 @@
 
 import base64
+import random
 
 import numpy as np
 import torch
 
-from prompt_to_key import convert_embedding_tensor_to_binary_key
-from key_to_embedding import compute_embedding_and_latents_from_key
-from key_to_embedding import convert_key_to_binary
-from key_to_embedding import unpack_binary_key_into_binary_float_array
-from key_to_embedding import convert_bin_key_to_float_array
+from model_constants import latents_shape, prompt_embeddings_shape
+
+from key_to_embedding import unpack_key
+from prompt_to_key import compute_key_from_data, compute_prompt_embedding
 from prompt_to_key import normalise_numbers
 
 
 
-for size in range(9,243):
-    print(f'checking size {size}')
-    prompt_embeddings = 12.0 * torch.randn(size=(size, ), dtype=torch.float16)
-    prompt_embeddings = normalise_numbers(prompt_embeddings)
+prompt_embeddings = 16.0 * torch.randn(size=prompt_embeddings_shape, dtype=torch.float16)
+prompt_embeddings = normalise_numbers(prompt_embeddings, type='prompt')
+prompt_embeddings_orig = prompt_embeddings.flatten().detach().cpu().numpy()
 
-    binary_key = convert_embedding_tensor_to_binary_key(prompt_embeddings,
-                                        latents=None,
-                                        latents_shape=None)
+latents = torch.randn(size=latents_shape, dtype=torch.float16)
+latents = normalise_numbers(latents, type='latents')
+latents_orig = latents.flatten().detach().cpu().numpy()
 
-    key = base64.b64encode(bytes(binary_key)).decode('utf-8')
+num_inference_steps = random.randint(0, 3)
+key = compute_key_from_data(embeddings=prompt_embeddings,
+                            latents=latents,
+                            latents_shape=latents_shape,
+                            num_inference_steps=num_inference_steps,
+                            debug=True)
 
+(
+    num_inference_steps_k,
+    prompt_embeddings_k,
+    latents_k
+) = unpack_key(key, debug=True)
 
-    key_bin = convert_key_to_binary(key, nb_bits_target=size * 15)
-    prompt_embeddings_bin_size = 2 * size
-    data_bin_size = prompt_embeddings_bin_size
-    #print(f'key bin len={len(key_bin)} - data size={data_bin_size} ({prompt_embeddings_bin_size}+{latents_bin_size})')
-    data =  unpack_binary_key_into_binary_float_array(key_bin, data_size=data_bin_size)
-    prompt_embeds_data = convert_bin_key_to_float_array(data)
-    assert(len(prompt_embeds_data) == size)
-
-    prompt_embeds_orig_np = prompt_embeddings.flatten().detach().cpu().numpy()
-
-    try:
-        assert(np.allclose(prompt_embeds_orig_np, prompt_embeds_data))
-    except AssertionError:
-        print(prompt_embeds_orig_np)
-        print(prompt_embeds_data)
-        abs_diff = np.abs(prompt_embeds_orig_np - prompt_embeds_data)
-        print(abs_diff)
-        max_diff = np.max(abs_diff)
-        print(max_diff)
-        print(prompt_embeds_orig_np[abs_diff == max_diff])
-        print(prompt_embeds_data[abs_diff == max_diff])
-        raise
+assert(num_inference_steps == num_inference_steps_k)
+assert(np.allclose(prompt_embeddings_orig, prompt_embeddings_k))
+assert(np.allclose(latents_orig, latents_k))
 
 print('✅️ passed')
 
