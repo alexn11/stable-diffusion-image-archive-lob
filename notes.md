@@ -53,6 +53,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- i think the issue is that latents should also be 14 bits but w a different bias in the expon!
 - implements show_latents (for debug below)
 - generated images suck? is it the latents? or a new bug?
 - rewrite the genration loop (its copy paste from diffusers)
