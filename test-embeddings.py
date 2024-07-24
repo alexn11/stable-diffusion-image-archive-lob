@@ -28,6 +28,7 @@ def show_diagnostic(orig: np.ndarray, k: np.ndarray):
     show_binary_data(orig)
     print(f'key: - {k[0]}')
     show_binary_data(k)
+    print(f'abs diff[:8] = {abs_diff[:8]}')
 
 
 prompt_embeddings = 16.0 * torch.randn(size=prompt_embeddings_shape, dtype=torch.float16)
@@ -54,12 +55,15 @@ key = compute_key_from_data(embeddings=prompt_embeddings,
 ) = unpack_key(key, debug=True)
 
 assert(num_inference_steps == num_inference_steps_k)
+
+print(' -  checking EMBEDS  -')
 try:
     assert(np.allclose(prompt_embeddings_orig, prompt_embeddings_k))
 except AssertionError:
     show_diagnostic(prompt_embeddings_orig, prompt_embeddings_k)
     raise
 
+print(' -  checking LATENTS  -')
 try:
     assert(np.allclose(latents_orig, latents_k))
 except AssertionError:
