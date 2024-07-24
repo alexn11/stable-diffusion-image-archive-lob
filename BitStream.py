@@ -27,7 +27,7 @@ class BitStream:
                 if(data_size_bits is None):
                     raise ValueError(f'either specify data or data_size_bits (both cant be None)')
                 target_size_bytes = (data_size_bits + 7) // 8
-                data = bytearray(target_size_bytes * [0])
+                self.data = bytearray(target_size_bytes * [0])
         else:
             max_size_bits = len(data) * 8
             if(data_size_bits is None):
@@ -87,7 +87,11 @@ class BitStream:
         while(nb_remaining_to_write > 0):
             write_len = min(nb_remaining_to_write, 8 - self.bit_i)
             write_mask = (1 << write_len) - 1
-            store_mask = (1 << self.bit_i) - 1
+            store_mask = ((1 << self.bit_i) - 1)
+            if(write_len + self.bit_i < 8):
+                higher_bits_position = write_len + self.bit_i 
+                nb_higher_bits = (8 - higher_bits_position)
+                store_mask |= ((1 << nb_higher_bits) - 1) << higher_bits_position
             self.data[self.byte_i] &= store_mask
             self.data[self.byte_i] |= (remaining_bits & write_mask) << self.bit_i
             remaining_bits >>= write_len
