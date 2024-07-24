@@ -142,7 +142,7 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
         # remove special values
         array = np.delete(array, list(prompt_embeddings_special_values.keys()))
     array_len = len(array)
-    if(array_type == 'prompt'):
+    if(debug and (array_type == 'prompt')):
         try:
             assert(array_len == prompt_embeddings_nb_values)
         except AssertionError:

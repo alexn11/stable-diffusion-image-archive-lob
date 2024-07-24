@@ -1,6 +1,4 @@
 import argparse
-import base64
-from functools import reduce
 
 import torch
 from diffusers import DiffusionPipeline
@@ -27,7 +25,8 @@ arg_parser.add_argument('--latents-seed', type=int, default=-33)
 arg_parser.add_argument('--check-determinism', action='store_true')
 #arg_parser.add_argument('--latents-type', type=str, choices=['blob', 'fixed-generator']) # obsolete
 arg_parser.add_argument('--output-file-name', type=str, default='')
-arg_parser.add_argument('--debug', action='store_true')
+arg_parser.add_argument('--no-debug', action='store_true')
+arg_parser.add_argument('--show-latents', action='store_true')
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
@@ -38,7 +37,8 @@ del(config_dict['check_determinism'])
 #del(config_dict['latents_type'])
 del(config_dict['latents_seed'])
 del(config_dict['output_file_name'])
-del(config_dict['debug'])
+del(config_dict['no_debug'])
+del(config_dict['show_latents'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -58,7 +58,8 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
 
-do_debug = parsed_args.debug
+do_show_latents = parsed_args.show_latents
+do_debug = not parsed_args.no_debug
 
 if(prompt != ''):
     print(f'using key generated from prompt "{prompt}"')
@@ -97,7 +98,7 @@ def key_to_image(key: str,
     ) = unpack_key(key, debug=debug)
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    seed_image = 0.5 * torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
     num_channels_latents = pipe.unet.config.in_channels
 
     if(debug):

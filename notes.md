@@ -37,9 +37,6 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # ideas
 
-- latents shape is rather small might be worth using this as a key; add it to the key mayeb?
-
-- the only way to ensure reproducibility is to create the pipe from scratch every time an image is generated
 
 - use a small resolution model
 - use a quantised model
@@ -56,7 +53,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-- implement pack_data_into_key in key_to_emebddings
+- implements show_latents (for debug below)
+- generated images suck? is it the latents? or a new bug?
 - rewrite the genration loop (its copy paste from diffusers)
 - put it in a function
 - image is not related to prompt ?
@@ -69,6 +67,10 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 ## done
 
+- implement pack_data_into_key in key_to_emebddings
+- latents shape is rather small might be worth using this as a key; add it to the key mayeb?
+
+- the only way to ensure reproducibility is to create the pipe from scratch every time an image is generated
 - in normal key latents should have different exponent bias (-14 to 1 instaed of -12 to 3)
 - promtp kindof work but its not a dog?
 - new bug unlocked: random exactly 2 difference in exactly one component between orig vector and its re-conversion
