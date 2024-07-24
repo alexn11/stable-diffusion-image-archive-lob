@@ -61,6 +61,8 @@ def unpack_array(data_stream: BitStream,
                  size_nb_values=None,
                  size_bytes=None,
                  debug=False) -> np.ndarray:
+    if(debug):
+        print_ct=0
     chunk_size = prompt_embeddings_bits_per_value if(array_type == 'prompt') else latents_bits_per_value
     if(chunk_size == 15):
         convert_function = convert_15_bits_int_to_float16_representation
@@ -78,10 +80,14 @@ def unpack_array(data_stream: BitStream,
     for value_i, packed_value in enumerate(packed_data):
         unpacked_value = convert_function(packed_value)
         if(debug):
-            print(f'unpacked_value={unpacked_value:016b}')
+            if(print_ct < 24):
+                print(f'unpacked_value={unpacked_value:016b}')
+                print_ct += 1
         unpacked_bytes[2 * value_i + 1] = (unpacked_value >> 8) & 0xff
         unpacked_bytes[2 * value_i] = unpacked_value & 0xff
     array_as_list = list(struct.unpack(f'<{size_nb_values}e', bytes(unpacked_bytes)))
+    if(debug):
+        print(f'1st unpacked value (1): {array_as_list[0]}')
     if(debug):
         print(f'len read={len(array_as_list)}')
     if(array_type == 'prompt'):
@@ -98,7 +104,12 @@ def unpack_array(data_stream: BitStream,
             except AssertionError:
                 print(f'array len={len(array_as_list)} - expected nb values: {size_nb_values}')
                 raise
-    return np.array(array_as_list)
+    if(debug):
+        print(f'1st unpacked value (2): {array_as_list[0]}')
+    array = np.array(array_as_list, dtype=np.float16)
+    if(debug):
+        print(f'1st unpacked value (3) - array: {array[0]}')
+    return np.array(array)
 
 def unpack_prompt_embeddings(data_stream: BitStream, debug=False) -> np.ndarray:
     return unpack_array(data_stream,
