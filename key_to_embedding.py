@@ -134,7 +134,7 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
     if(chunk_size_bits == 15):
         convert_function = convert_float_to_15_bits
     elif(chunk_size_bits == 14):
-        convert_float_to_14_bits
+        convert_function = convert_float_to_14_bits
     else:
         raise ValueError(f'unsupported chunk bit size: {chunk_size_bits}')
     packed_data_stream.set_chunk_size(chunk_size_bits)
