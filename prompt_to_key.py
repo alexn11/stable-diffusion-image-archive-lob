@@ -25,13 +25,16 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                              prompt: str,
                              device='cuda',
                              num_images_per_prompt: int = 1,
-                             guidance_scale: float = 7.5) -> torch.Tensor:
+                             guidance_scale: float = 7.5,
+                             single_embeddings=True) -> torch.Tensor:
     do_classifier_free_guidance = guidance_scale > 1.0
     prompt_embeds = pipe._encode_prompt(prompt,
                                         device,
                                         num_images_per_prompt,
                                         do_classifier_free_guidance,
                                         None)
+    if(single_embeddings):
+        prompt_embeds = prompt_embeds[0]
     prompt_embeds = normalise_numbers(prompt_embeds)
     return prompt_embeds
 
