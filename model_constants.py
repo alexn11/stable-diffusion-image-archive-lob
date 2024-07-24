@@ -7,7 +7,7 @@ prompt_embeddings_bits_per_value = 15
 prompt_embeddings_nb_bits = prompt_embeddings_nb_values * prompt_embeddings_bits_per_value
 prompt_embeddings_nb_bytes = prompt_embeddings_nb_values * 2
 
-prompt_emebeddings_special_values = {
+prompt_embeddings_special_values = {
     19: -28.078125,
     681: 33.09375,
 }

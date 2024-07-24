@@ -10,7 +10,7 @@ from model_constants import num_inference_steps_level_to_counts, num_inference_s
 from model_constants import prompt_embeddings_bits_per_value, latents_bits_per_value
 from model_constants import prompt_embeddings_nb_bytes, latents_nb_bytes
 from model_constants import prompt_embeddings_nb_values, latents_nb_values
-from model_constants import prompt_emebeddings_special_values
+from model_constants import prompt_embeddings_special_values
 from key_strings import convert_key_to_bit_stream, convert_packed_data_to_key
 
 def convert_15_bits_int_to_float16_representation(datum_15_bits: int) -> int:
@@ -140,10 +140,14 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
     packed_data_stream.set_chunk_size(chunk_size_bits)
     if(array_type == 'prompt'):
         # remove special values
-        array = np.delete(array, list(prompt_emebeddings_special_values.keys()))
+        array = np.delete(array, list(prompt_embeddings_special_values.keys()))
     array_len = len(array)
     if(array_type == 'prompt'):
-        assert(array_len == prompt_embeddings_nb_values)
+        try:
+            assert(array_len == prompt_embeddings_nb_values)
+        except AssertionError:
+            print(f'array len={len(array)} - prompt emb nb vals={prompt_embeddings_nb_values}')
+            raise
     else:
         assert(array_len == latents_nb_values)
     array_data = struct.unpack(f'{array_len}h', bytes(array.data))

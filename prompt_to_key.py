@@ -1,6 +1,4 @@
-import base64
-
-import numpy as np
+import random
 
 from diffusers import DiffusionPipeline
 import torch
@@ -62,8 +60,10 @@ def generate_key_from_prompt(prompt: str,
                              num_images_per_prompt=1,
                              latents=None,
                              latents_shape=latents_shape,
-                             num_inference_steps=num_inference_steps_level_to_counts[-1],
+                             num_inference_steps=None,
                              debug=False) -> str:
+    if(num_inference_steps is None):
+        num_inference_steps = random.choice(num_inference_steps_level_to_counts)
     prompt_embeddings = compute_prompt_embedding(pipe=pipe,
                                                  prompt=prompt,
                                                  device=device,
