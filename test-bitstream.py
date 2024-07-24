@@ -45,7 +45,7 @@ for i in range(22):
 
 # changing chunk size in the middle
 x = [ 0b01010101, 0b11110000, 0b00110011, 0b11100111, 0b00111100, 0b00000101 ]
-bit_stream = BitStream(bytes(x), chunk_size_bits=14, data_size_bits=42)
+bit_stream = BitStream(data=bytes(x), chunk_size_bits=14, data_size_bits=42)
 values = bit_stream.get_chunks(2)
 for v in values:
     print(f'{v:014b}')
@@ -58,3 +58,5 @@ assert(all([values[i] == expected_values[i] for i in range(2)]))
 bit_stream.set_chunk_size(15)
 value = bit_stream.get_chunk()
 assert(value == 0b101001111001110)
+
+print('😏️ passed')
