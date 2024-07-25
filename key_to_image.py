@@ -44,7 +44,10 @@ del(config_dict['show_latents'])
 config = prepare_config(**config_dict)
 model_name = config['model_name']
 device = config['device']
-num_inference_steps = config['num_inference_steps']
+if(num_inference_steps_nb_bits == 0):
+    num_inference_steps = config['num_inference_steps']
+else:
+    num_inference_steps = None
 prompt = config['prompt']
 height = config['height']
 width = config['width']

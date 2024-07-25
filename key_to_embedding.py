@@ -125,14 +125,19 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
         # remove special values
         array = np.delete(array, list(prompt_embeddings_special_values.keys()))
     array_len = len(array)
-    if(debug and (array_type == 'prompt')):
-        try:
-            assert(array_len == prompt_embeddings_nb_values)
-        except AssertionError:
-            print(f'array len={len(array)} - prompt emb nb vals={prompt_embeddings_nb_values}')
-            raise
-    else:
-        assert(array_len == latents_nb_values)
+    if(debug):
+        if(array_type == 'prompt'):
+            try:
+                assert(array_len == prompt_embeddings_nb_values)
+            except AssertionError:
+                print(f'array len={len(array)} - prompt emb nb vals={prompt_embeddings_nb_values}')
+                raise
+        else:
+            try:
+                assert(array_len == latents_nb_values)
+            except AssertionError:
+                print(f'array len={len(array)} - latents nb vals={latents_nb_values}')
+                raise
     array_data = struct.unpack(f'{array_len}h', bytes(array.data))
     for value in array_data:
         packed_value = float_packer.pack(value)

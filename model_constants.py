@@ -7,7 +7,6 @@ prompt_embeddings_bits_per_value = 15
 prompt_embeddings_exponent_max = 2
 prompt_embeddings_nb_bits = prompt_embeddings_nb_values * prompt_embeddings_bits_per_value
 prompt_embeddings_nb_bytes = prompt_embeddings_nb_values * 2
-
 prompt_embeddings_special_values = {
     19: -28.078125,
     681: 33.09375,
@@ -16,7 +15,7 @@ prompt_embeddings_special_values = {
 latents_shape = (1, 4, 52, 80)
 latents_nb_values = reduce(lambda x,y:x*y, latents_shape)
 latents_bits_per_value = 15
-latents_exponent_max = 0
+latents_exponent_max = 2
 latents_nb_bits = latents_nb_values * latents_bits_per_value
 latents_nb_bytes = latents_nb_values * 2
 
