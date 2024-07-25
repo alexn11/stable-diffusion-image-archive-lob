@@ -114,13 +114,23 @@ def key_to_image(key: str,
     #print(seed_image.shape)
     #seed_image = torch.randn(size=latents_shape,dtype=torch.float16).to('cuda')
     #print(seed_image.shape)
-    #prompt_embeds2 = pipe._encode_prompt(prompt,
-    #                                    device,
-    #                                    num_images_per_prompt,
-    #                                    do_classifier_free_guidance,
-    #                                    None)
-    #abs_diff = torch.abs(prompt_embeds - prompt_embeds2)
-    #print(f'max={torch.max(abs_diff).item()} - avg={torch.mean(abs_diff).item()}')
+    if(False):
+        prompt_embeds2 = pipe._encode_prompt(prompt,
+                                            device,
+                                            num_images_per_prompt,
+                                            do_classifier_free_guidance,
+                                            None)
+        print(f'👲️👲️ prepared={prompt_embeds[0,0,19]} - {prompt_embeds[0,0,681]}')
+        print(f'👲️👲️ computed={prompt_embeds2[0,0,19]} - {prompt_embeds2[0,0,681]}')
+        abs_diff = torch.abs(prompt_embeds - prompt_embeds2)
+        print(f'where diff: {torch.argmax(abs_diff[0])} - {torch.max(abs_diff[0]).item()}')
+        #from matplotlib import pyplot
+        #pyplot.plot(abs_diff.flatten().detach().cpu().numpy())
+        #pyplot.show()
+        # 👲️👲️ 
+        prompt_embeds[1,:] = prompt_embeds2[1, :]
+        # 👲️👲️ 
+        #prompt_embeds = prompt_embeds2
     #raise Exception('end')
     # <👲️👲️👲️
     num_channels_latents = pipe.unet.config.in_channels
@@ -180,7 +190,6 @@ def key_to_image(key: str,
                     progress_bar.update()
                     #if callback is not None and i % callback_steps == 0:
                     #    callback(i, t, latents)
-        #
         #
         if not output_type == "latent":
             image = pipe.vae.decode(latents / pipe.vae.config.scaling_factor, return_dict=False)[0]

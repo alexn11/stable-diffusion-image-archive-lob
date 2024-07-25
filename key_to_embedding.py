@@ -123,7 +123,11 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
     packed_data_stream.set_chunk_size(chunk_size_bits)
     if(array_type == 'prompt'):
         # remove special values
+        if(debug):
+            print(f'🎀️ 🎀️ bfore ({len(array)}) {array[19]} - {array[681]}')
         array = np.delete(array, list(prompt_embeddings_special_values.keys()))
+        if(debug):
+            print(f'🎀️ 🎀️ after ({len(array)}) {array[19]} - {array[681]}')
     array_len = len(array)
     if(debug):
         if(array_type == 'prompt'):

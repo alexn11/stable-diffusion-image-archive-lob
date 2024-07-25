@@ -11,10 +11,14 @@ prompt_embeddings_special_values = {
     19: -28.078125,
     681: 33.09375,
 }
-prompt_embeddings_special_values = {
-    19: 12.086,
-    681: 17.1,
-}
+#prompt_embeddings_special_values = {
+#    19: 12.086,
+#    681: 17.1,
+#}
+#prompt_embeddings_special_values = {
+#    19: -15.9921875,
+#    681: 15.9921875,
+#}
 
 latents_shape = (1, 4, 52, 80)
 latents_nb_values = reduce(lambda x,y:x*y, latents_shape)
