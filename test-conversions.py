@@ -1,11 +1,12 @@
 import numpy as np
 import torch
 
+from model_constants import prompt_embeddings_exponent_max
+from FloatPacker import FloatPacker
 from key_to_embedding import convert_bin_key_to_float_array
 from key_to_embedding import pack_float_array_into_binary_key, unpack_binary_key_into_binary_float_array
 from key_to_embedding import convert_float_to_15_bits, convert_exponent_to_5_bits
 from key_to_embedding import generate_random_key_base64, convert_key_to_binary
-from prompt_to_key import normalise_numbers
 
 
 def pack_and_unpack(x: np.ndarray):
@@ -45,7 +46,8 @@ x = np.array([11.,12.,13., -11., 2., 9.25, ], dtype=np.float16)
 check_pack_and_unpack(x)
 
 x_data = [-1.363, 1.349, 0.01707, -0.00911, -0.779, 1.878, -2.041, -0.5615, 1.403, 1.253, -0.1927, -1.7, 1.548, 2.084, -0.852, 1.37, -0.1356, 1.527, -0.01339, -0.0344, 1.615, 0.6553, 0.1733, 1.49, 2.451, -0.3435, -0.628, -0.00301, 1.206, -0.508, 1.806, 1.119, -2.068, -1.759, 2.193, -2.074, 0., -0.2406, -0.4497, ]
-x = normalise_numbers(torch.tensor(x_data, dtype=torch.float16)).detach().cpu().numpy()
+normaliser = FloatPacker(max_exponent=prompt_embeddings_exponent_max, debug=True)
+x = normaliser.normalise_numbers(torch.tensor(x_data, dtype=torch.float16)).detach().cpu().numpy()
 print(f'🔦️ orig - norm = {np.max(np.abs(x-np.array(x_data, dtype=np.float16)))}')
 check_pack_and_unpack(x)
 

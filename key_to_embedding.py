@@ -3,52 +3,18 @@ import struct
 import numpy as np
 
 from BitStream import BitStream
+from FloatPacker import FloatPacker
 from model_constants import data_nb_bits
 from model_constants import nb_padding_chars
 from model_constants import num_inference_steps_nb_bits
 from model_constants import num_inference_steps_level_to_counts, num_inference_steps_counts_to_level
 from model_constants import prompt_embeddings_bits_per_value, latents_bits_per_value
 from model_constants import prompt_embeddings_nb_bytes, latents_nb_bytes
+from model_constants import prompt_embeddings_exponent_max, latents_exponent_max
 from model_constants import prompt_embeddings_nb_values, latents_nb_values
 from model_constants import prompt_embeddings_special_values
 from key_strings import convert_key_to_bit_stream, convert_packed_data_to_key
 
-def convert_15_bits_int_to_float16_representation(datum_15_bits: int) -> int:
-    #def convert_exponent_to_5_bits(datum: int):
-    exp = (datum_15_bits & 0b011110000000000) >> 10
-    exp += 3
-    sign = (datum_15_bits & 0b100000000000000) >> 14
-    datum = (datum_15_bits & 0b000001111111111) | (exp << 10) | (sign << 15)
-    return datum
-
-def convert_14_bits_int_to_float16_representation(datum_14_bits: int) -> int:
-    exp = (datum_14_bits & 0b01110000000000) >> 10
-    exp += 1
-    sign = (datum_14_bits & 0b100000000000000) >> 13
-    datum = (datum_14_bits & 0b000001111111111) | (exp << 10) | (sign << 15)
-    return datum
-
-def convert_float_to_15_bits(float_value: int):
-    exp = (float_value & 0b0111110000000000) >> 10
-    exp -= 3
-    exp &= 0b1111
-    sign = ((float_value & 0b1000000000000000) >> 15) & 1
-    datum = (float_value & 0b000001111111111) | (exp << 10) | (sign << 14)
-    #print(f'fv={float_value:016b}')
-    #print(f's={sign:04b} - exp={exp:05b}')
-    #print(f'cv={datum:016b}')
-    return datum
-
-def convert_float_to_14_bits(float_value: int):
-    exp = (float_value & 0b0111110000000000) >> 10
-    exp -= 1
-    exp &= 0b111
-    sign = ((float_value & 0b1000000000000000) >> 15) & 1
-    datum = (float_value & 0b000001111111111) | (exp << 10) | (sign << 13)
-    #print(f'fv={float_value:016b}')
-    #print(f's={sign:04b} - exp={exp:05b}')
-    #print(f'cv={datum:016b}')
-    return datum
 
 def unpack_num_inference_steps(data_stream: BitStream) -> int:
     data_stream.set_chunk_size(num_inference_steps_nb_bits)
@@ -63,12 +29,12 @@ def unpack_array(data_stream: BitStream,
                  debug=False) -> np.ndarray:
     if(debug):
         print_ct=0
+    float_unpacker = FloatPacker(max_exponent = prompt_embeddings_exponent_max
+                                                   if(array_type == 'prompt') else
+                                                latents_exponent_max,
+                                debug=debug)
     chunk_size = prompt_embeddings_bits_per_value if(array_type == 'prompt') else latents_bits_per_value
-    if(chunk_size == 15):
-        convert_function = convert_15_bits_int_to_float16_representation
-    elif(chunk_size == 14):
-        convert_function = convert_14_bits_int_to_float16_representation
-    else:
+    if(chunk_size != 15):
         raise ValueError(f'unsupported chunk bit size: {chunk_size}')
     if(size_nb_values is None):
         size_nb_values = prompt_embeddings_nb_values if(array_type == 'prompt') else latents_nb_values
@@ -78,7 +44,7 @@ def unpack_array(data_stream: BitStream,
     packed_data = data_stream.get_chunks(size_nb_values)
     unpacked_bytes = bytearray(size_bytes * [0])
     for value_i, packed_value in enumerate(packed_data):
-        unpacked_value = convert_function(packed_value)
+        unpacked_value = float_unpacker.unpack(packed_value)
         if(debug):
             if(print_ct < 24):
                 print(f'unpacked_value={unpacked_value:016b}')
@@ -142,11 +108,11 @@ def pack_num_inference_steps(packed_data_stream: BitStream, num_inference_steps:
 def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', debug = False) -> BitStream:
     assert(array_type in ['prompt', 'latents'])
     chunk_size_bits = prompt_embeddings_bits_per_value if(array_type == 'prompt') else latents_bits_per_value
-    if(chunk_size_bits == 15):
-        convert_function = convert_float_to_15_bits
-    elif(chunk_size_bits == 14):
-        convert_function = convert_float_to_14_bits
-    else:
+    float_packer = FloatPacker(max_exponent = prompt_embeddings_exponent_max
+                                                if(array_type == 'prompt') else
+                                              latents_exponent_max,
+                               debug=debug)
+    if(chunk_size_bits != 15):
         raise ValueError(f'unsupported chunk bit size: {chunk_size_bits}')
     packed_data_stream.set_chunk_size(chunk_size_bits)
     if(array_type == 'prompt'):
@@ -163,7 +129,7 @@ def pack_array(packed_data_stream: BitStream, array: np.ndarray, array_type='', 
         assert(array_len == latents_nb_values)
     array_data = struct.unpack(f'{array_len}h', bytes(array.data))
     for value in array_data:
-        packed_value = convert_function(value)
+        packed_value = float_packer.pack(value)
         packed_data_stream.write_chunk(packed_value)
     return packed_data_stream
 

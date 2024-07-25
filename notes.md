@@ -53,6 +53,8 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- 1. float packer
+  2. compute new key size and adapt num inference steps padding and byte padding etc.
 - i think the issue is that latents should also be 14 bits but w a different bias in the expon!
 - implements show_latents (for debug below)
 - generated images suck? is it the latents? or a new bug?

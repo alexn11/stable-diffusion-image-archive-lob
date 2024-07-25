@@ -4,37 +4,20 @@ from diffusers import DiffusionPipeline
 import torch
 
 from model_constants import latents_shape, num_inference_steps_level_to_counts
+from model_constants import prompt_embeddings_exponent_max
+from FloatPacker import FloatPacker
 from key_to_embedding import pack_data_into_key
 
 
 
-# smallest representable number under this 15 bits system
-#  note: 0 cant be represented under the system
-smallest_numbers = {
-    'prompt': 2**-12,
-    'latents': 2**-14,
-}
-# largest abs value
-largest_positive_numbers = {
-    'prompt': 8.+4+2+1+1/2+1/4+1/8+1/16+1/32+1/64+1/128,
-    'latents': 4.,
-}
-
-
-def normalise_numbers(x: torch.Tensor, type='prompt'):
-    smallest_number = smallest_numbers[type]
-    largest_positive_number = largest_positive_numbers[type]
-    x[torch.abs(x) < smallest_number] = smallest_number
-    x[x > largest_positive_number] = largest_positive_number
-    x[x < -largest_positive_number] = -largest_positive_number
-    return x
 
 def compute_prompt_embedding(pipe: DiffusionPipeline,
                              prompt: str,
                              device='cuda',
                              num_images_per_prompt: int = 1,
                              guidance_scale: float = 7.5,
-                             single_embeddings=True) -> torch.Tensor:
+                             single_embeddings=True,
+                             debug=False) -> torch.Tensor:
     do_classifier_free_guidance = guidance_scale > 1.0
     prompt_embeds = pipe._encode_prompt(prompt,
                                         device,
@@ -43,7 +26,9 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                                         None)
     if(single_embeddings):
         prompt_embeds = prompt_embeds[0]
-    prompt_embeds = normalise_numbers(prompt_embeds)
+    value_normaliser = FloatPacker(max_exponent=prompt_embeddings_exponent_max,
+                                   debug=debug)
+    prompt_embeds = value_normaliser.normalise_numbers(prompt_embeds)
     return prompt_embeds
 
 def compute_key_from_data(embeddings: torch.Tensor,
