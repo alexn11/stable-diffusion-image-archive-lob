@@ -24,9 +24,9 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                                         device,
                                         num_images_per_prompt,
                                         do_classifier_free_guidance,
-                                        None)
+                                        negative_prompt='',)
     if(single_embeddings):
-        prompt_embeds = prompt_embeds[0]
+        prompt_embeds = prompt_embeds[1]
     value_normaliser = FloatPacker(max_exponent=prompt_embeddings_exponent_max,
                                    debug=debug)
     prompt_embeds = value_normaliser.normalise_numbers(prompt_embeds)
