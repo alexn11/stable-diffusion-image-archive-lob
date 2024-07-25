@@ -8,14 +8,15 @@ class FloatPacker:
             raise ValueError(f'exponent max should be within 0 to 30')
         self.exponent_max = max_exponent
         self.exponent_min = self.exponent_max - 14
-        self.smallest_positive_value = (1 << self.exponent_min)
-        self.largest_value = (1 << self.exponent_max) * (
+        self.smallest_positive_value = 2.**self.exponent_min
+        self.largest_value = (2**self.exponent_max) * (
                                                           1 + 1/2 + 1/4 + 1/8
                                                           + 1/16 + 1/32 + 1/64
                                                           + 1/128 + 1/256 + 1/512 + 1/1024
-                                                        )
+                                                      )
         self.exponent_biais = self.exponent_max + 1
         self.debug = debug
+        self._print_ct = 0
     def pack(self, float_value: int) -> int:
         exp = (float_value & 0b0111110000000000) >> 10
         exp -= self.exponent_biais
@@ -23,9 +24,11 @@ class FloatPacker:
         sign = ((float_value & 0b1000000000000000) >> 15) & 1
         packed_value = (float_value & 0b000001111111111) | (exp << 10) | (sign << 14)
         if(self.debug):
-            print(f'fv={float_value:016b}')
-            print(f's={sign:04b} - exp={exp:05b}')
-            print(f'cv={packed_value:016b}')
+            if(self._print_ct < 24):
+                print(f'fv={float_value:016b}')
+                print(f's={sign:04b} - exp={exp:05b}')
+                print(f'cv={packed_value:016b}')
+                self._print_ct += 1
         return packed_value
     def unpack(self, packed_value: int) -> int:
         exp = (packed_value & 0b011110000000000) >> 10

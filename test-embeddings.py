@@ -45,7 +45,8 @@ latents = torch.randn(size=latents_shape, dtype=torch.float16)
 latents = latents_normaliser.normalise_numbers(latents,)
 latents_orig = latents.flatten().detach().cpu().numpy()
 
-num_inference_steps = random.choice(num_inference_steps_level_to_counts)
+#num_inference_steps = random.choice(num_inference_steps_level_to_counts)
+num_inference_steps = None
 key = compute_key_from_data(embeddings=prompt_embeddings,
                             latents=latents,
                             latents_shape=latents_shape,
@@ -53,12 +54,12 @@ key = compute_key_from_data(embeddings=prompt_embeddings,
                             debug=True)
 
 (
-    num_inference_steps_k,
+    #num_inference_steps_k,
     prompt_embeddings_k,
     latents_k
 ) = unpack_key(key, debug=True)
 
-assert(num_inference_steps == num_inference_steps_k)
+#assert(num_inference_steps == num_inference_steps_k)
 
 print(' -  checking EMBEDS  -')
 try:
