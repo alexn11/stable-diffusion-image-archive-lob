@@ -94,11 +94,16 @@ def unpack_key(base_64_key: str,
                                             start_chunk_size_bits=2,
                                             data_size_bits=data_nb_bits,
                                             nb_padding_chars=nb_padding_chars)
-    num_inference_steps = unpack_num_inference_steps(data_stream,)
+    if(num_inference_steps_nb_bits > 0):
+        num_inference_steps = unpack_num_inference_steps(data_stream,)
+    else:
+        num_inference_steps = None
     prompt_embeddings = unpack_prompt_embeddings(data_stream,
                                                  debug=debug)
     latents = unpack_latents(data_stream, debug=debug)
-    return num_inference_steps, prompt_embeddings, latents
+    if(num_inference_steps_nb_bits > 0):
+        return num_inference_steps, prompt_embeddings, latents
+    return prompt_embeddings, latents
 
 def pack_num_inference_steps(packed_data_stream: BitStream, num_inference_steps: int) -> BitStream:
     packed_data_stream.set_chunk_size(num_inference_steps_nb_bits)
@@ -140,13 +145,14 @@ def pack_prompt_embeddings(packed_data_stream: BitStream, prompt_embeddings: np.
 def pack_prompt_latents(packed_data_stream: BitStream, latents: np.ndarray, debug = False) -> BitStream:
     return pack_array(packed_data_stream, latents, array_type='latents', debug=debug)
 
-def pack_data_into_key(num_inference_steps: int,
-                       prompt_embeddings: np.ndarray,
-                       latents: np.ndarray,
+def pack_data_into_key(num_inference_steps: int | None = None,
+                       prompt_embeddings: np.ndarray = None,
+                       latents: np.ndarray = None,
                        debug = False,
                        return_type='key') -> str:
     packed_data_stream = BitStream(data_size_bits=data_nb_bits, mode='w')
-    pack_num_inference_steps(packed_data_stream, num_inference_steps)
+    if(num_inference_steps_nb_bits > 0):
+        pack_num_inference_steps(packed_data_stream, num_inference_steps)
     pack_prompt_embeddings(packed_data_stream, prompt_embeddings, debug=debug)
     pack_prompt_latents(packed_data_stream, latents, debug=debug)
     if(return_type != 'key'):

@@ -3,7 +3,8 @@ import random
 from diffusers import DiffusionPipeline
 import torch
 
-from model_constants import latents_shape, num_inference_steps_level_to_counts
+from model_constants import latents_shape
+from model_constants import num_inference_steps_level_to_counts, num_inference_steps_nb_bits
 from model_constants import prompt_embeddings_exponent_max
 from FloatPacker import FloatPacker
 from key_to_embedding import pack_data_into_key
@@ -43,10 +44,13 @@ def compute_key_from_data(embeddings: torch.Tensor,
         if(latents is None):
             latents = torch.randn(size=latents_shape, dtype=torch.float16)
         latents_data = latents.flatten().detach().cpu().numpy()
-    if(num_inference_steps is None):
-        num_inference_steps = random.choice(num_inference_steps_level_to_counts)
-    if(debug):
-        assert(num_inference_steps in num_inference_steps_level_to_counts)
+    if(num_inference_steps_nb_bits > 0):
+        if(num_inference_steps is None):
+            num_inference_steps = random.choice(num_inference_steps_level_to_counts)
+        if(debug):
+            assert(num_inference_steps in num_inference_steps_level_to_counts)
+    else:
+        num_inference_steps = None
     key = pack_data_into_key(num_inference_steps=num_inference_steps,
                              prompt_embeddings=embeddings_data,
                              latents=latents_data,

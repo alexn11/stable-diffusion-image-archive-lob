@@ -5,6 +5,7 @@ from diffusers import DiffusionPipeline
 from diffusers.utils.testing_utils import enable_full_determinism
 
 from model_constants import data_nb_bits
+from model_constants import num_inference_steps_nb_bits
 from model_constants import prompt_embeddings_shape, latents_shape
 from prepare_model import prepare_config, prepare_model
 from key_strings import generate_random_key_base64
@@ -16,7 +17,7 @@ arg_parser.add_argument('--prompt', type=str, default='')
 #arg_parser.add_argument('--width', type=int, default=640)
 #arg_parser.add_argument('--height', type=int, default=416)
 arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default='cuda')
-#arg_parser.add_argument('--num-inference-steps', type=int, default=50)
+arg_parser.add_argument('--num-inference-steps', type=int, default=50)
 arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
 arg_parser.add_argument('--nb-keys', type=int, default=8)
 arg_parser.add_argument('--key-file', type=str, default='')
@@ -88,14 +89,21 @@ def key_to_image(key: str,
                  generator: torch.Generator = None,
                  dtype = torch.float16,
                  device = 'cuda',
+                 num_inference_steps: int | None = None,
                  prompt_embeddings_shape=prompt_embeddings_shape,
                  latents_shape=latents_shape,
                  debug=False):
-    (
-        num_inference_steps,
-        prompt_embeds_data,
-        latents_data
-    ) = unpack_key(key, debug=debug)
+    if(num_inference_steps_nb_bits > 0):
+        (
+            num_inference_steps,
+            prompt_embeds_data,
+            latents_data
+        ) = unpack_key(key, debug=debug)
+    else:
+        (
+            prompt_embeds_data,
+            latents_data
+        ) = unpack_key(key, debug=debug)        
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
     seed_image = 0.5 * torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
@@ -215,6 +223,7 @@ for key_i, key in enumerate(keys):
                          device=device,
                          prompt_embeddings_shape=prompt_embeddings_shape,
                          latents_shape=latents_shape,
+                         num_inference_steps=num_inference_steps,
                          debug=do_debug)
     image[0].show()
     if(parsed_args.output_file_name != ''):

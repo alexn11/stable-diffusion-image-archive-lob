@@ -20,8 +20,10 @@ latents_exponent_max = 0
 latents_nb_bits = latents_nb_values * latents_bits_per_value
 latents_nb_bytes = latents_nb_values * 2
 
-num_inference_steps_nb_bits = 2
-num_inference_steps_level_to_counts = [ 12, 25, 36, 50 ]
+#num_inference_steps_nb_bits = 2
+#num_inference_steps_level_to_counts = [ 12, 25, 36, 50 ]
+num_inference_steps_nb_bits = 0
+num_inference_steps_level_to_counts = [ ]
 num_inference_steps_counts_to_level = {
     counts: level
     for level, counts in enumerate(num_inference_steps_level_to_counts)
@@ -29,4 +31,5 @@ num_inference_steps_counts_to_level = {
 
 data_nb_bits = num_inference_steps_nb_bits + prompt_embeddings_nb_bits + latents_nb_bits
 
-nb_padding_chars = 2
+#nb_padding_chars = 2
+nb_padding_chars = 0

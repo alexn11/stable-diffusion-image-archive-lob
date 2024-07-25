@@ -53,6 +53,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
+- new system packs nicely into 928640 bits which is both a multiple of 6 and 8 so no padding necessary (and num inference steps become fixed again)
 - 1. float packer
   2. compute new key size and adapt num inference steps padding and byte padding etc.
 - i think the issue is that latents should also be 14 bits but w a different bias in the expon!
