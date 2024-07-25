@@ -93,7 +93,8 @@ def unpack_key(base_64_key: str,
     data_stream = convert_key_to_bit_stream(base_64_key,
                                             start_chunk_size_bits=2,
                                             data_size_bits=data_nb_bits,
-                                            nb_padding_chars=nb_padding_chars)
+                                            nb_padding_chars=nb_padding_chars,
+                                            debug=debug)
     if(num_inference_steps_nb_bits > 0):
         num_inference_steps = unpack_num_inference_steps(data_stream,)
     else:

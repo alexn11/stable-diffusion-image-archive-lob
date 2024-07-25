@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from model_constants import latents_shape, prompt_embeddings_shape
-from model_constants import num_inference_steps_level_to_counts
+from model_constants import num_inference_steps_nb_bits, num_inference_steps_level_to_counts
 from model_constants import prompt_embeddings_special_values
 from model_constants import prompt_embeddings_exponent_max, latents_exponent_max
 
@@ -45,21 +45,31 @@ latents = torch.randn(size=latents_shape, dtype=torch.float16)
 latents = latents_normaliser.normalise_numbers(latents,)
 latents_orig = latents.flatten().detach().cpu().numpy()
 
-#num_inference_steps = random.choice(num_inference_steps_level_to_counts)
-num_inference_steps = None
+if(num_inference_steps_nb_bits > 0):
+    num_inference_steps = random.choice(num_inference_steps_level_to_counts)
+else:
+    num_inference_steps = None
 key = compute_key_from_data(embeddings=prompt_embeddings,
                             latents=latents,
                             latents_shape=latents_shape,
                             num_inference_steps=num_inference_steps,
                             debug=True)
 
-(
-    #num_inference_steps_k,
-    prompt_embeddings_k,
-    latents_k
-) = unpack_key(key, debug=True)
+unpacked_key = unpack_key(key, debug=True)
 
-#assert(num_inference_steps == num_inference_steps_k)
+if(num_inference_steps_nb_bits > 0):
+    (
+        num_inference_steps_k,
+        prompt_embeddings_k,
+        latents_k
+    ) = unpacked_key
+    assert(num_inference_steps == num_inference_steps_k)
+else:
+    (
+        prompt_embeddings_k,
+        latents_k
+    ) = unpacked_key
+
 
 print(' -  checking EMBEDS  -')
 try:

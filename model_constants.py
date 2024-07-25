@@ -22,8 +22,10 @@ latents_nb_bytes = latents_nb_values * 2
 
 #num_inference_steps_nb_bits = 2
 #num_inference_steps_level_to_counts = [ 12, 25, 36, 50 ]
-num_inference_steps_nb_bits = 0
-num_inference_steps_level_to_counts = [ ]
+#num_inference_steps_nb_bits = 0
+#num_inference_steps_level_to_counts = [ ]
+num_inference_steps_nb_bits = 6
+num_inference_steps_level_to_counts = [ i for i in range(65) ]
 num_inference_steps_counts_to_level = {
     counts: level
     for level, counts in enumerate(num_inference_steps_level_to_counts)

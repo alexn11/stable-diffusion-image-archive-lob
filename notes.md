@@ -3,6 +3,16 @@
 ```bash
 python key_to_image.py
 python key_to_image.py --prompt "a dog" --nb-keys 3
+python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
+python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
+python key_to_image.py --no-debug
+```
+
+
+##  pre 2024-07-25
+```bash
+python key_to_image.py
+python key_to_image.py --prompt "a dog" --nb-keys 3
 # 
 python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
 python key_to_image.py --prompt "a nice ice cream" --num-inference-steps 36 --nb-keys 4
@@ -53,10 +63,6 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # todos
 
-- new system packs nicely into 928640 bits which is both a multiple of 6 and 8 so no padding necessary (and num inference steps become fixed again)
-- 1. float packer
-  2. compute new key size and adapt num inference steps padding and byte padding etc.
-- i think the issue is that latents should also be 14 bits but w a different bias in the expon!
 - implements show_latents (for debug below)
 - generated images suck? is it the latents? or a new bug?
 - rewrite the genration loop (its copy paste from diffusers)
@@ -71,6 +77,10 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 ## done
 
+- new system packs nicely into 928640 bits which is both a multiple of 6 and 8 so no padding necessary (and num inference steps become fixed again)
+- 1. float packer
+  2. compute new key size and adapt num inference steps padding and byte padding etc.
+- i think the issue is that latents should also be 14 bits but w a different bias in the expon!
 - implement pack_data_into_key in key_to_emebddings
 - latents shape is rather small might be worth using this as a key; add it to the key mayeb?
 
