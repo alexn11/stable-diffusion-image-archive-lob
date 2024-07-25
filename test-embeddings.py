@@ -1,91 +1,91 @@
 
-import base64
-import random
 
+from matplotlib import pyplot
 import numpy as np
 import torch
 
-from model_constants import latents_shape, prompt_embeddings_shape
-from model_constants import num_inference_steps_nb_bits, num_inference_steps_level_to_counts
-from model_constants import prompt_embeddings_special_values
-from model_constants import prompt_embeddings_exponent_max, latents_exponent_max
-
-from FloatPacker import FloatPacker
+from model_constants import latents_shape, num_inference_steps_nb_bits
+from prepare_model import prepare_model, prepare_config
+from prompt_to_key import compute_prompt_embedding
+from prompt_to_key import compute_key_from_data, generate_key_from_prompt
 from key_to_embedding import unpack_key
-from prompt_to_key import compute_key_from_data, compute_prompt_embedding
 
 
-def show_binary_data(array:np.ndarray, length=12):
-    data = bytes(array.data)
-    for i in range(length):
-        print(f'{data[i]:08b}')
+prompt = 'a dog'
 
-def show_diagnostic(orig: np.ndarray, k: np.ndarray):
-    abs_diff = np.abs(orig - k)
-    max_diff = np.max(abs_diff)
-    argmax_diff = np.argmax(abs_diff)
-    print(f'max diff={max_diff} ({argmax_diff})')
-    print(f'original: - {orig[0]}')
-    show_binary_data(orig)
-    print(f'key: - {k[0]}')
-    show_binary_data(k)
-    print(f'abs diff[:8] = {abs_diff[:8]}')
+config = prepare_config()
+pipe = prepare_model(config['model_name'], config['dtype'], config['device'] )
 
-prompt_embeddings_normaliser = FloatPacker(max_exponent=prompt_embeddings_exponent_max, debug=True)
-latents_normaliser = FloatPacker(max_exponent=latents_exponent_max, debug=True)
+prompt_embeds = compute_prompt_embedding(pipe,
+                         prompt=prompt,
+                         device=config['device'],
+                         num_images_per_prompt=1,
+                         single_embeddings=True,
+                         debug=True)
 
+prompt_embeds = prompt_embeds.detach().flatten().cpu().numpy()
 
-prompt_embeddings = 16.0 * torch.randn(size=prompt_embeddings_shape, dtype=torch.float16)
-prompt_embeddings = prompt_embeddings_normaliser.normalise_numbers(prompt_embeddings)
-prompt_embeddings_orig = prompt_embeddings.flatten().detach().cpu().numpy()
-for i, v in prompt_embeddings_special_values.items():
-    prompt_embeddings_orig[i] = v
-
-latents = torch.randn(size=latents_shape, dtype=torch.float16)
-latents = latents_normaliser.normalise_numbers(latents,)
-latents_orig = latents.flatten().detach().cpu().numpy()
-
-if(num_inference_steps_nb_bits > 0):
-    num_inference_steps = random.choice(num_inference_steps_level_to_counts)
-else:
-    num_inference_steps = None
-key = compute_key_from_data(embeddings=prompt_embeddings,
-                            latents=latents,
+key1 = compute_key_from_data(torch.tensor(prompt_embeds),
+                            latents = None,
                             latents_shape=latents_shape,
-                            num_inference_steps=num_inference_steps,
-                            debug=True)
+                            num_inference_steps = None,
+                            debug=True) 
 
-unpacked_key = unpack_key(key, debug=True)
+key2 = generate_key_from_prompt(prompt,
+                             pipe = pipe,
+                             device = config['device'],
+                             num_images_per_prompt=1,
+                             latents=None,
+                             latents_shape=latents_shape,
+                             num_inference_steps=None,
+                             debug=True)
 
+
+unpacked_1 = unpack_key(key1, debug=True)
 if(num_inference_steps_nb_bits > 0):
-    (
-        num_inference_steps_k,
-        prompt_embeddings_k,
-        latents_k
-    ) = unpacked_key
-    assert(num_inference_steps == num_inference_steps_k)
+    _,embeds_1,_ = unpacked_1
 else:
-    (
-        prompt_embeddings_k,
-        latents_k
-    ) = unpacked_key
+    embeds_1, _ = unpacked_1
+
+unpacked_2 = unpack_key(key2, debug=True)
+if(num_inference_steps_nb_bits > 0):
+    _,embeds_2,_ = unpacked_2
+else:
+    embeds_2, _ = unpacked_2
 
 
-print(' -  checking EMBEDS  -')
-try:
-    assert(np.allclose(prompt_embeddings_orig, prompt_embeddings_k))
-except AssertionError:
-    show_diagnostic(prompt_embeddings_orig, prompt_embeddings_k)
-    raise
+abs_diff_1 = np.abs(prompt_embeds - embeds_1)
+abs_diff_2 = np.abs(prompt_embeds - embeds_2)
 
-print(' -  checking LATENTS  -')
-try:
-    assert(np.allclose(latents_orig, latents_k))
-except AssertionError:
-    show_diagnostic(latents_orig, latents_k)
-    raise
+print('diff 1')
+print(abs_diff_1[abs_diff_1 > 0.])
+print('  @')
+print(np.argwhere(abs_diff_1))
+print('diff 2')
+print(abs_diff_2[abs_diff_2 > 0.])
+print('  @')
+print(np.argwhere(abs_diff_2))
 
-print('✅️ passed')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

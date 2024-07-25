@@ -74,9 +74,9 @@ def generate_key_from_prompt(prompt: str,
                                                  num_images_per_prompt=num_images_per_prompt,)
     if(debug):
         try:
-            assert(prompt_embeddings.shape == (2,77,768))
+            assert(prompt_embeddings.shape[-2:] == ( 77, 768, ))
         except AssertionError:
-            print(f'prompt emb shape: {prompt_embeddings.shape} (expect: 2,77,768)')
+            print(f'prompt emb shape: {prompt_embeddings.shape} (expect: 77,768)')
             raise
     key = compute_key_from_data(embeddings=prompt_embeddings,
                                 latents=latents,

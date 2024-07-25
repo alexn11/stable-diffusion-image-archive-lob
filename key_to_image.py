@@ -114,6 +114,14 @@ def key_to_image(key: str,
     #print(seed_image.shape)
     #seed_image = torch.randn(size=latents_shape,dtype=torch.float16).to('cuda')
     #print(seed_image.shape)
+    #prompt_embeds2 = pipe._encode_prompt(prompt,
+    #                                    device,
+    #                                    num_images_per_prompt,
+    #                                    do_classifier_free_guidance,
+    #                                    None)
+    #abs_diff = torch.abs(prompt_embeds - prompt_embeds2)
+    #print(f'max={torch.max(abs_diff).item()} - avg={torch.mean(abs_diff).item()}')
+    #raise Exception('end')
     # <👲️👲️👲️
     num_channels_latents = pipe.unet.config.in_channels
 
