@@ -109,7 +109,12 @@ def key_to_image(key: str,
         ) = unpack_key(key, debug=debug)        
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    seed_image = 0.5 * torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    # >👲️👲️👲️
+    #print(seed_image.shape)
+    #seed_image = torch.randn(size=latents_shape,dtype=torch.float16).to('cuda')
+    #print(seed_image.shape)
+    # <👲️👲️👲️
     num_channels_latents = pipe.unet.config.in_channels
 
     if(debug):
