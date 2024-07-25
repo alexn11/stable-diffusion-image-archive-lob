@@ -1,10 +1,13 @@
 # normal use
 
 ```bash
+python generate-random-key-file.py 
 python key_to_image.py
+python key_to_image.py --prompt "dog" --nb-keys 2
+python key_to_image.py --nb-keys 2
 python key_to_image.py --prompt "a dog" --nb-keys 3
-python key_to_image.py --prompt "a dog" --num-inference-steps 40 --nb-keys 4
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
+python key_to_image.py --prompt "dog" --nb-keys 4
 python key_to_image.py --no-debug
 ```
 

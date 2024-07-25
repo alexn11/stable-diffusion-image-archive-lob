@@ -4,8 +4,23 @@ import random
 from BitStream import BitStream
 from model_constants import data_nb_bits
 from model_constants import nb_padding_chars
+from model_constants import key_length
 
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+
+def b64_inc(digit: str) -> tuple[str, int]:
+    i = base64_characters.index(digit)
+    inc_i = i + 1
+    if(inc_i == 64):
+        inc_i = 0
+        carry = 1
+    else:
+        carry = 0
+    return base64_characters[inc_i], carry
+
+def get_next_key(key: str) -> str:
+    pass
 
 def generate_random_key_base64(nb_bits: int = data_nb_bits, nb_padding_chars=None) -> str:
     if((nb_bits % 6) != 0):

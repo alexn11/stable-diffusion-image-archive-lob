@@ -32,7 +32,7 @@ latents_nb_bytes = latents_nb_values * 2
 #num_inference_steps_nb_bits = 0
 #num_inference_steps_level_to_counts = [ ]
 num_inference_steps_nb_bits = 6
-num_inference_steps_level_to_counts = [ i for i in range(65) ]
+num_inference_steps_level_to_counts = [ i+1 for i in range(64) ]
 num_inference_steps_counts_to_level = {
     counts: level
     for level, counts in enumerate(num_inference_steps_level_to_counts)
@@ -42,3 +42,5 @@ data_nb_bits = num_inference_steps_nb_bits + prompt_embeddings_nb_bits + latents
 
 #nb_padding_chars = 2
 nb_padding_chars = 0
+
+key_length = data_nb_bits // 6
