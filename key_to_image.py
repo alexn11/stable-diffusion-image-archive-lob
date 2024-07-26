@@ -63,7 +63,7 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
-key_step_skip = parsed_args.skip
+#key_step_skip = parsed_args.skip
 
 do_show_latents = parsed_args.show_latents
 do_debug = not parsed_args.no_debug
