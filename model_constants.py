@@ -44,3 +44,8 @@ data_nb_bits = num_inference_steps_nb_bits + prompt_embeddings_nb_bits + latents
 nb_padding_chars = 0
 
 key_length = data_nb_bits // 6
+
+image_height = 416
+image_width = 640
+
+

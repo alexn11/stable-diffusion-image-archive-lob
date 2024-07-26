@@ -2,6 +2,7 @@ from diffusers import DiffusionPipeline
 from diffusers.utils import load_image
 import torch
 
+from model_constants import image_height, image_width
 
 
 def load_model(model_name, dtype, device) -> DiffusionPipeline:
@@ -14,9 +15,9 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
                    device = 'cuda',
                    num_inference_steps = 50,
                    prompt = '',
-                   height = 416,
-                   width = 640, ##
-                   # no reasin to change the bellow
+                   # no reason to change anything bellow
+                   height = image_height,
+                   width = image_width,
                    batch_size = 1,
                    num_images_per_prompt = 1,
                    guidance_scale=7.5,
