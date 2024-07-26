@@ -9,18 +9,41 @@ from model_constants import key_length
 base64_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 
-def b64_inc(digit: str) -> tuple[str, int]:
+def b64_inc_digit(digit: str, carry=1) -> tuple[str, int]:
     i = base64_characters.index(digit)
-    inc_i = i + 1
+    inc_i = i + carry
     if(inc_i == 64):
         inc_i = 0
-        carry = 1
+    elif(inc_i == -1):
+        inc_i = 63
     else:
         carry = 0
     return base64_characters[inc_i], carry
 
-def get_next_key(key: str) -> str:
-    pass
+def b64_inc_number(key: str, carry=1) -> str:
+    new_digits = ''
+    for digit in key:
+        if(carry == 0):
+            break
+        new_digit, carry = b64_inc_digit(digit, carry=carry)
+        new_digits += new_digit
+    return new_digits + key[len(new_digits):]
+
+def get_next_key(key: str, direction=1, skip=0) -> str:
+    # next: direction=+1
+    # prev: direction=-1
+    if(skip >= key_length):
+        raise ValueError(f'skip level should be less than {key_length} -> got: {skip}')
+    if(skip > 0):
+        static_digits = key[-skip:]
+        key = key[:-skip]
+    else:
+        static_digits = ''
+    key_length_at_level = key_length - skip
+    if(key == key_length_at_level * base64_characters[(-1-direction)//2]):
+        return key_length_at_level * base64_characters[(direction-1)//2]
+    next_key = b64_inc_number(key[::-1], carry=direction)
+    return next_key[::-1] + static_digits
 
 def generate_random_key_base64(nb_bits: int = data_nb_bits, nb_padding_chars=None) -> str:
     if((nb_bits % 6) != 0):

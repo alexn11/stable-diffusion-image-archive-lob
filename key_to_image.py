@@ -8,7 +8,7 @@ from model_constants import data_nb_bits
 from model_constants import num_inference_steps_nb_bits
 from model_constants import prompt_embeddings_shape, latents_shape
 from prepare_model import prepare_config, prepare_model
-from key_strings import generate_random_key_base64
+from key_strings import generate_random_key_base64, get_next_key
 from key_to_embedding import unpack_key
 from prompt_to_key import generate_key_from_prompt
 
@@ -28,6 +28,7 @@ arg_parser.add_argument('--check-determinism', action='store_true')
 arg_parser.add_argument('--output-file-name', type=str, default='')
 arg_parser.add_argument('--no-debug', action='store_true')
 arg_parser.add_argument('--show-latents', action='store_true')
+#arg_parser.add_argument('--skip', type=int, default=0)
 parsed_args = arg_parser.parse_args()
 
 config_dict = parsed_args.__dict__.copy()
@@ -40,6 +41,7 @@ del(config_dict['latents_seed'])
 del(config_dict['output_file_name'])
 del(config_dict['no_debug'])
 del(config_dict['show_latents'])
+#del(config_dict['skip'])
 
 config = prepare_config(**config_dict)
 model_name = config['model_name']
@@ -61,6 +63,7 @@ do_classifier_free_guidance = config['do_classifier_free_guidance']
 
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
+key_step_skip = parsed_args.skip
 
 do_show_latents = parsed_args.show_latents
 do_debug = not parsed_args.no_debug
@@ -215,13 +218,39 @@ pipe = prepare_model(model_name, dtype, device, )
 if(prompt != ''):
     print('computing keys for prompt')
     keys = [
-        generate_key_from_prompt(prompt=prompt,
-                                 pipe=pipe,
-                                 device=device,
-                                 num_images_per_prompt=num_images_per_prompt,
-                                 latents=None,)
-        for k in range(nb_keys)
-    ]
+            generate_key_from_prompt(prompt=prompt,
+                                    pipe=pipe,
+                                    device=device,
+                                    num_images_per_prompt=num_images_per_prompt,
+                                    latents=None,)
+            for k in range(nb_keys)
+        ]
+    #key_0 = generate_key_from_prompt(prompt=prompt,
+    #                                 pipe=pipe,
+    #                                 device=device,
+    #                                 num_images_per_prompt=num_images_per_prompt,
+    #                                 latents=None,)
+    #nb_steps = nb_keys
+    #step_size = 2
+    #keys = [ key_0 ]
+    #prev_key = key_0
+    #for step_i in range(nb_steps):
+    #    next_key = get_next_key(prev_key)
+    #    #for i in range(1845):
+    #    for i in range(step_size):
+    #        #next_key = get_next_key(next_key, skip=0)
+    #        next_key = get_next_key(prev_key, skip=key_step_skip)
+    #    keys.append(next_key)
+    #    prev_key = next_key
+    #print(f'k:{keys[0] == keys[1]}')
+    #for i in range(len(key_0)):
+    #    a = keys[0][i]
+    #    b = keys[1][i]
+    #    if(a != b):
+    #        print(f'd={i}: "{a}" - "{b}" -- i={i}+{key_step_skip}={i+key_step_skip} - len={len(key_0)}')
+    #raise Exception('end')
+    #keys += [ get_next_key(key) for key in keys[:nb_keys] ]
+    #keys += [ get_next_key(key, direction=-1) for key in keys[:nb_keys] ]
 
 """
 vae_scale_factor = pipe.vae_scale_factor
@@ -240,7 +269,8 @@ latents = prepare_latents(batch_size=batch_size,
 """
       
 for key_i, key in enumerate(keys):
-    #print(f'key len={len(key)}')
+    print(f'key len={len(key)}')
+    print(f' {key[189434:]}')
     image = key_to_image(key=key,
                          pipe=pipe,
                          generator=pipe_generator,
