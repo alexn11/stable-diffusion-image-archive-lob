@@ -7,6 +7,7 @@ from model_constants import prompt_embeddings_shape, latents_shape
 from model_constants import num_inference_steps_nb_bits
 from model_constants import image_height, image_width
 from key_to_embedding import unpack_key
+from prepare_model import prepare_latents
 
 def key_to_image(key: str,
                  pipe: DiffusionPipeline,
@@ -38,6 +39,18 @@ def key_to_image(key: str,
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
     seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    # >👲️👲️👲️
+    #seed_image = prepare_latents(batch_size=batch_size,
+    #                             num_images_per_prompt=num_images_per_prompt,
+    #                             num_channels_latents= pipe.unet.config.in_channels,
+    #                             height=height,
+    #                             width=width,
+    #                             dtype=dtype,
+    #                             device=device,
+    #                             vae_scale_factor=pipe.vae_scale_factor,
+    #                             debug=True)
+    # <👲️👲️👲️
+    #
     # >👲️👲️👲️
     #print(seed_image.shape)
     #seed_image = torch.randn(size=latents_shape,dtype=torch.float16).to('cuda')
