@@ -29,16 +29,16 @@ def validate_key(key):
     return key
 # key: str = constr(pattern=rf'[{base64_characters}]{{{2}}}$')
 
-def get_image(key: str | None,
+def get_image(key: str | None = None,
               prompt: str | None = None,
               image_finder_pipeline: ImageFinderPipeline = None,):
     if((key is None) and (prompt is not None)):
         key = image_finder_pipeline.image_finder.find_a_key(prompt)
     if(key is not None):
         key = validate_key(key)
-        image = image_finder_pipeline.image_cache.get(key,
-                                                      create_func=image_finder_pipeline.image_finder.find,
-                                                      create_func_args={'key': key})
+        image = image_finder_pipeline.image_cache.get_image(key,
+                                                            create_func=image_finder_pipeline.image_finder.find,
+                                                            create_func_args={'key': key})
         image_byte_stream = io.BytesIO()
         image.save(image_byte_stream, format="JPEG")
         encoded_image_base64 = base64.b64encode(image_byte_stream.getvalue()).decode("utf-8")

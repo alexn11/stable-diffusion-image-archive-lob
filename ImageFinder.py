@@ -35,7 +35,7 @@ class ImageFinder:
         self.pipe = prepare_model(self.model_config['model_name'],
                                   self.dtype,
                                   self.device)
-    def find(self, key: str) -> Image.Image:
+    def find(self, key: str, return_tuple=True) -> Image.Image:
         image = key_to_image(key,
                      pipe=self.pipe,
                      generator=self.pipe_generator,
@@ -50,15 +50,17 @@ class ImageFinder:
                      do_classifier_free_guidance=self.do_classifier_free_guidance,
                      output_type=self.output_type,
                      debug=self.debug)
+        if(return_tuple):
+            return (image, )
         return image
-    def find_a_key(self, prompt: str):
+    def find_a_key(self, prompt: str) -> str:
         key = generate_key_from_prompt(prompt=prompt,
                                        pipe=self.pipe,
                                        device=self.device,
                                        num_images_per_prompt=self.num_images_per_prompt,
                                        latents=None,)
         return key
-    def find_from_prompt(self, prompt: str):
+    def find_from_prompt(self, prompt: str) -> tuple[Image.Image, str]:
         key = self.find_a_key(prompt)
         image = self.find(key)
-        return image, key
+        return (image, key, )
