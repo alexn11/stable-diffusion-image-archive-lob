@@ -68,6 +68,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 1. API
 2. interface
+3. cache
 - implements show_latents (for debug below)
 - generated images suck? is it the latents? or a new bug?
 - rewrite the genration loop (its copy paste from diffusers)
