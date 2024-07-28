@@ -1,4 +1,5 @@
 
+import datetime
 import json
 import os
 import uuid
@@ -15,11 +16,11 @@ class ImageCache:
         else:
             with open(self.meta_data_file, 'r') as meta_data_file:
                 self.meta_data: dict = json.load(meta_data_file)
-    def get(self, image_key: str, create_func=None, creat_func_args: dict | None = None) -> Image.Image:
+    def get(self, image_key: str, create_func=None, create_func_args: dict | None = None) -> Image.Image:
         image_path = self.meta_data.get(image_key)
         if(image_path is None):
             if(create_func is not None):
-                return_values = create_func(**creat_func_args)
+                return_values = create_func(**create_func_args)
                 self.record(image_key, return_values[0])
                 return return_values
             return None
@@ -34,6 +35,8 @@ class ImageCache:
         image_file_path = self.make_record_file_path(image_file_name)
         image.save(image_file_path)
         self.meta_data[image_key] = image_file_name
+        # for easy cleanup:
+        #self.meta_data[image_key + '_date_added'] = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
         self.save_meta_data()
     def make_record_file_path(self, file_name: str):
         return os.path.join(self.folder, file_name)

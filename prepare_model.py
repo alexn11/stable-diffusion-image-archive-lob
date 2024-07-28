@@ -38,7 +38,7 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
         'guidance_scale': guidance_scale,
         'output_type': output_type,
         'batch_size': batch_size,
-        'num_image_per_prompt': num_images_per_prompt,
+        'num_images_per_prompt': num_images_per_prompt,
         'dtype': dtype,
         'do_classifier_free_guidance': do_classifier_free_guidance,
     }
