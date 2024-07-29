@@ -10,6 +10,7 @@ class ImageFinder:
     def __init__(self, config: dict, debug=False):
         self.debug = debug
         self.config = config
+        self.max_steps = config['max_steps']
         self.model_config = prepare_config(model_name=config['model_name'],
                                       device=config['device'],
                                       num_images_per_prompt=config['num_images_per_prompt'],
@@ -49,6 +50,7 @@ class ImageFinder:
                      guidance_scale=self.guidance_scale,
                      do_classifier_free_guidance=self.do_classifier_free_guidance,
                      output_type=self.output_type,
+                     max_steps=self.max_steps,
                      debug=self.debug)
         if(return_tuple):
             return (image, )

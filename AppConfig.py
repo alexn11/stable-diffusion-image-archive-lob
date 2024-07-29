@@ -12,6 +12,7 @@ class AppConfig:
     def make_image_finder_config_dict(self,):
         seed = os.environ.get('SEED', '0')
         debug = os.environ.get('DEBUG', '')
+        max_steps = int(os.environ.get('MAX_STEPS', '64'))
         self.image_finder_config_dict = {
             'seed': int(seed),
             'debug': (debug in ['1', 'True', 'true', 'on']),
@@ -25,4 +26,5 @@ class AppConfig:
             'num_images_per_prompt': 1,
             'guidance_scale': 7.5,
             'output_type': 'pil',
+            'max_steps': max_steps,
         }

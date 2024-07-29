@@ -50,7 +50,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 
 # ideas
 
-- the base64 of the jpg is shorter than the key! maybe just use that!
+- the base64 of the jpg is shorter than the key! i wonder if its possible to fin an algorithm that generates all jpeg
 - it seems that the second tensor in the prompt embeddings IS important (and not a duplicate of the 1st one)
 - use a small resolution model
 - use a quantised model

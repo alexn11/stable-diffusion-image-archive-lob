@@ -27,6 +27,7 @@ def key_to_image(key: str,
                  guidance_scale: float = 7.5,
                  do_classifier_free_guidance: bool = False,
                  output_type: str = 'pil',
+                 max_steps: int = 64,
                  debug=False) -> Image:
     if(num_inference_steps_nb_bits > 0):
         (
@@ -38,7 +39,10 @@ def key_to_image(key: str,
         (
             prompt_embeds_data,
             latents_data
-        ) = unpack_key(key, debug=debug)        
+        ) = unpack_key(key, debug=debug)
+    # forces saving on compute:
+    if((max_steps > 0) and (num_inference_steps > max_steps)):
+        num_inference_steps = max_steps
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
     seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
