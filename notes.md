@@ -1,3 +1,15 @@
+# apps
+
+## config
+
+see app.env & api.env
+
+## run
+
+- run the api server: `fastapi dev api.py`
+- run the streamlit app: `streamlit run app.py`
+- wait until the api is ready before using the app
+
 # normal use
 
 ```bash

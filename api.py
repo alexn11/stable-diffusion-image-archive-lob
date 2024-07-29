@@ -12,9 +12,11 @@ from AppConfig import AppConfig
 from ImageCache import ImageCache
 from ImageFinder import ImageFinder
 
-
 class Key(BaseModel):
     key: str
+
+class Prompt(BaseModel):
+    prompt: str
 
 # i would put the below into the above if i understood how this worked...
 def validate_key(key):
@@ -102,10 +104,10 @@ def key_to_image(key: Key,
         'image': encoded_image_base64,
     }
 
-@app.get('/image/by-prompt')
-def promt_to_image(prompt: str,
+@app.post('/image/by-prompt')
+def promt_to_image(prompt: Prompt,
                    image_finder: ImageFinderPipeline = Depends(get_image_finder)):
-    encoded_image_base6, image_key = get_image(prompt=prompt, image_finder_pipeline=image_finder)
+    encoded_image_base6, image_key = get_image(prompt=prompt.prompt, image_finder_pipeline=image_finder)
     return {
         'key': image_key,
         'image': encoded_image_base6,

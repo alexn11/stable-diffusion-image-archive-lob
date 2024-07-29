@@ -4,8 +4,6 @@ import requests
 
 from dotenv import load_dotenv
 import streamlit as st
-import pandas as pd
-import numpy as np
 
 
 load_dotenv('app.env')
@@ -35,6 +33,13 @@ def get_image(key):
     response_data = request_api('post', 'image', data={ 'key': key, }, fetching=True)
     return decode_image(response_data)
 
+def search_image(prompt):
+    response_data = request_api('post', 'image/by-prompt', data={'prompt': prompt, }, fetching=True)
+    #print(response_data)
+    key = response_data['key']
+    image = decode_image(response_data)
+    return key, image
+
 def get_next_image(key):
     response_data = request_api('post', 'image/next', data={ 'key': key, }, fetching=True)
     return response_data['key'], decode_image(response_data)
@@ -55,6 +60,7 @@ def get_key():
 
 st.title('Stable diffusion babelia')
 
+   
 image_load_state = st.empty()
 image_place_holder = st.empty()
 
@@ -82,10 +88,11 @@ if(st.session_state.get('btn_random')):
     new_key = get_random_key()
     image = get_image(new_key)
     update_image(new_key, image)
+
+st.code(st.session_state.key_text)
+
+prompt = st.text_input('prompt', key='prompt_input')
 if(st.session_state.get('prompt_input')):
-    st.text('PROMPT INPUT')
-
-st.text(st.session_state.key_text)
-
-st.text_input('prompt', key='prompt_input')
+    new_key, image = search_image(prompt)
+    update_image(new_key, image)
 
