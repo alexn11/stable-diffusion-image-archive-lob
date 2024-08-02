@@ -2,3 +2,4 @@ ignored/
 __pycache__/
 *.png
 *.env
+/cache
