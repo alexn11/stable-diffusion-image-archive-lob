@@ -7,12 +7,12 @@ import uuid
 from PIL import Image
 
 def get_utc_now() -> str:
-    return datetime.datetime.now(tz=datetime.timezone.utc)
+    return datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y-%m-%d')
 
 class ImageCache:
     def __init__(self, cache_folder_path: str):
         self.folder = cache_folder_path
-        self.meta_data_file = 'meta.json' # TODO use a database
+        self.meta_data_file = os.path.join(self.folder, 'meta.json') # TODO use a database
         self.prepare_meta_data()
     def prepare_meta_data(self):
         if(not os.path.exists(self.meta_data_file)):
