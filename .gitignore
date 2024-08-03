@@ -5,3 +5,4 @@ __pycache__/
 /cache
 *.npy
 test-key.txt
+meta.json
