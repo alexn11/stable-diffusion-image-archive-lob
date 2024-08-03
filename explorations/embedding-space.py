@@ -141,5 +141,9 @@ def create_random_embeddings(models: np.ndarray, n: int):
     return random_embeddings
 
 if((nb_random_embeddings > 0) and (random_embeddings_file_path != '')):
+    print(f'creating {nb_random_embeddings} random embeddings')
     random_embeddings = create_random_embeddings(embeddings, nb_random_embeddings)
+    print(f'saving random embeddings to {random_embeddings_file_path}')
     np.save(random_embeddings_file_path, random_embeddings, allow_pickle=False)
+
+print('all done')
