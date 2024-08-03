@@ -10,13 +10,18 @@ load_dotenv('app.env')
 api_url = os.environ['API_URL']
 
 def request_api(method: str, path: str, data: dict | None = None, fetching=False):
+    print(f'sending query to "{path}"')
     url = os.path.join(api_url, path)
     if(fetching):
         image_load_state.text('fetching image...')
-    if(method == 'get'):
-        response = requests.get(url=url)
-    else:
-        response = requests.post(url=url, json=data)
+    try:
+        if(method == 'get'):
+            response = requests.get(url=url)
+        else:
+            response = requests.post(url=url, json=data)
+    except Exception:
+        image_load_state.empty()
+        raise
     response_data = response.json()
     if(fetching):
         image_load_state.empty()
@@ -67,16 +72,24 @@ image_place_holder = st.empty()
 if 'key_text' not in st.session_state:
     st.session_state.key_text = ''
 
+if 'prev_prompt' not in st.session_state:
+    st.session_state.prev_prompt = None
 
 
 # https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
-col1, col2, col3 = st.columns([1,1,1])
+col1, col2, col3, col4 = st.columns([1,1,1,1])
 with col1:
     st.button('prev', key='btn_prev')
 with col2:
     st.button('next', key='btn_next')
 with col3:
     st.button('random', key='btn_random')
+with col4:
+    st.button('search again', key='btn_search_again')
+
+st.code(st.session_state.key_text)
+prompt = st.text_input('prompt search', key='prompt_input')
+
 
 if(st.session_state.get('btn_prev')):
     new_key, image = get_prev_image(get_key())
@@ -88,11 +101,14 @@ if(st.session_state.get('btn_random')):
     new_key = get_random_key()
     image = get_image(new_key)
     update_image(new_key, image)
-
-st.code(st.session_state.key_text)
-
-prompt = st.text_input('prompt', key='prompt_input')
-if(st.session_state.get('prompt_input')):
+if(st.session_state.get('btn_search_again')):
     new_key, image = search_image(prompt)
     update_image(new_key, image)
+
+
+if(st.session_state.get('prompt_input')):
+    if(st.session_state.prev_prompt != prompt):
+        st.session_state.prev_prompt = prompt
+        new_key, image = search_image(prompt)
+        update_image(new_key, image)
 
