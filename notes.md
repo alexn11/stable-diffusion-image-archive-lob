@@ -14,7 +14,11 @@ see app.env & api.env
 
 - random key:
 - random embeddings:
+```bash
+python explorations/embedding-space.py --nb-random-embeddings 24 --random-embeddings-file random-embeddings.npy
+python key_to_image.py --embeddings-file random-embeddings.npy --output-file-name random-embeddings-results-set-3
 
+```
 
 
 # normal use
