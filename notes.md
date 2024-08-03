@@ -13,10 +13,14 @@ see app.env & api.env
 ## generate stuff
 
 - random key:
+```bash
+python generate-random-key-file.py 
+python key_to_image.py --key-file test-key.txt
+```
 - random embeddings:
 ```bash
-python explorations/embedding-space.py --nb-random-embeddings 24 --random-embeddings-file random-embeddings.npy --pca-outliers-idx-file ''
-python key_to_image.py --embeddings-file random-embeddings.npy --output-file-name random-embeddings-results-set-3
+python explorations/embedding-space.py --nb-random-embeddings 12 --random-embeddings-file random-embeddings.npy --pca-outliers-idx-file ''
+python key_to_image.py --embeddings-file random-embeddings.npy --output-file-name random-embeddings-results-set-5
 ```
 
 
