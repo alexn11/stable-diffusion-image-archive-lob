@@ -1,5 +1,6 @@
 import argparse
 
+import numpy as np
 import torch
 from diffusers.utils.testing_utils import enable_full_determinism
 
@@ -7,12 +8,13 @@ from model_constants import data_nb_bits
 from model_constants import num_inference_steps_nb_bits
 from model_constants import prompt_embeddings_shape, latents_shape
 from prepare_model import prepare_config, prepare_model
-from key_strings import generate_random_key_base64, get_next_key
-from prompt_to_key import generate_key_from_prompt
+from key_strings import generate_random_key_base64
+from prompt_to_key import generate_key_from_prompt, compute_key_from_data
 from key_to_image_pipeline import key_to_image
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('--prompt', type=str, default='')
+arg_parser.add_argument('--embeddings-file', type=str, default='')
 #arg_parser.add_argument('--width', type=int, default=640)
 #arg_parser.add_argument('--height', type=int, default=416)
 arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default='cuda')
@@ -40,6 +42,7 @@ del(config_dict['latents_seed'])
 del(config_dict['output_file_name'])
 del(config_dict['no_debug'])
 del(config_dict['show_latents'])
+del(config_dict['embeddings_file'])
 #del(config_dict['skip'])
 
 config = prepare_config(**config_dict)
@@ -55,10 +58,10 @@ width = config['width']
 guidance_scale = config['guidance_scale']
 output_type = config['output_type']
 batch_size = config['batch_size']
-num_images_per_prompt = config['num_image_per_prompt']
+num_images_per_prompt = config['num_images_per_prompt']
 dtype = config['dtype']
 do_classifier_free_guidance = config['do_classifier_free_guidance']
-
+embeddings_file = parsed_args.embeddings_file
 
 nb_keys = parsed_args.nb_keys
 key_file_path = parsed_args.key_file
@@ -69,6 +72,9 @@ do_debug = not parsed_args.no_debug
 
 if(prompt != ''):
     print(f'using key generated from prompt "{prompt}"')
+    keys = []
+elif(embeddings_file != ''):
+    print(f'using keys generated from synthetic embeddings ({embeddings_file})')
     keys = []
 elif(key_file_path != ''):
     print(f'using key from file "{key_file_path}"')
@@ -135,6 +141,18 @@ if(prompt != ''):
     #raise Exception('end')
     #keys += [ get_next_key(key) for key in keys[:nb_keys] ]
     #keys += [ get_next_key(key, direction=-1) for key in keys[:nb_keys] ]
+elif(embeddings_file != ''):
+    embeddings = np.load(embeddings_file)
+    nb_embeddings = len(embeddings)
+    embeddings = torch.tensor(embeddings).reshape((nb_embeddings, 2, 77, 768)).to(torch.float16).to(device)
+    keys = [
+                compute_key_from_data(embeddings=embedding[1],
+                                latents=None,
+                                latents_shape=latents_shape,
+                                num_inference_steps=num_inference_steps,
+                                debug=do_debug)
+                for embedding in embeddings
+            ]
 
 """
 vae_scale_factor = pipe.vae_scale_factor

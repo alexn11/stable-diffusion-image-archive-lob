@@ -10,6 +10,13 @@ see app.env & api.env
 - run the streamlit app: `streamlit run app.py`
 - wait until the api is ready before using the app
 
+## generate stuff
+
+- random key:
+- random embeddings:
+
+
+
 # normal use
 
 ```bash
@@ -21,6 +28,8 @@ python key_to_image.py --prompt "a dog" --nb-keys 3
 python key_to_image.py --key-file test-key.txt --num-inference-steps 8 --check-determinism
 python key_to_image.py --prompt "dog" --nb-keys 4
 python key_to_image.py --no-debug
+python key_to_image.py --embeddings-file random-embeddings.npy 
+python key_to_image.py --embeddings-file random-embeddings.npy --output-file-name random-embeddings-results
 ```
 
 

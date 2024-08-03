@@ -38,6 +38,7 @@ def compute_key_from_data(embeddings: torch.Tensor,
                           num_inference_steps: int | None = None,
                           debug=False) -> str:
     embeddings_data = embeddings.flatten().detach().cpu().numpy()
+    assert(embeddings_data.shape == (77*768,))
     if((latents is None) and (latents_shape is None)):
         raise ValueError(f'obsolete undocumented functionality reached')
     else:
