@@ -32,7 +32,7 @@ streamlit run app.py
 In the app you can see:
 - The image it found (after any request).
 - A "random" button: generate a random key and its associated image.
-- "prev" and "next" buttons: look up the image corresponding respectively to the previous or to the key following the current one.
+- "prev" and "next" buttons: retrieve the image associated with either the preceding or subsequent key (keys can theoretically be listed sequentially).
 - A "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
 - Below the buttons, a text area showing the key (with a "copy" button on its right side).
 - Below the the key, a text input to search an image with a specific content: this will find a new key for an image that matches the prompt (or at least attempts to).
