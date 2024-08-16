@@ -1,8 +1,8 @@
 # introduction
 
-This is an attempt for a *"stable diffusion version"* of [babel image archives](http://babelia.libraryofbabel.info/about.html).
+This is an attempt for a stable diffusion version of [babel image archives](http://babelia.libraryofbabel.info/about.html).
 
-The idea is to replace *image locations* with keys encoding the image generation process in a fully deterministic way.
+The idea is to replace image locations with keys encoding the image generation process in a fully deterministic way.
 
 
 # how to run
@@ -27,7 +27,7 @@ streamlit run app.py
 # app
 
 The app consists of the following elements:
-- a "random" button: generate a random key (image location) and its associated image
+- a "random" button: generate a random key and its associated image
 - a "prev" and "next" buttons: look up the image corresponding respectively to the previous or the next key from the current one
 - a "search again" button: search another image corresponding to the prompt given in the "prompt search" input
 - below the buttons: a text area below showing the key (with a copy button on its right side)
@@ -35,7 +35,7 @@ The app consists of the following elements:
 
 ![example of randomly generated image](images/random-key.png)
 ![example of prompt look-up](images/prompt-lob.png)
-![example of "search again" result](images/prompt-lob-again.png)
+
 
 
 # technical details
@@ -45,18 +45,11 @@ The keys encode different elements of a stable diffusion generation process used
 - a seed image (249600 bits)
 - the number of inference steps (6 bits)
 
-The keys are base 64 encoded binary strings of total length *189436* (*=(887010+249600+6)/6*).
+The keys are base 64 encoded binary strings of total length 189436.
 
-The bits corresponding to the embedding vector and seed image are converted into 16 bits float. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
+The bits corresponding to the embedding vector and seed image are converted into 16 bits floats. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
 
 
-issues:
-- no proof that:
-  - key to image is injective (esp when using the slideshow can see hardly any difference between images)
-  - key to image is surjective on the set of interesting images (what is an interesting image?)
-- would get a different library if changed hardware
-- can't search for an image (could potentially implement some optimisation loop...)
-- image prompt is not always followed
 
 
 
