@@ -1,0 +1,10 @@
+diffusers==0.18.1
+fastapi==0.104.1
+matplotlib==3.5.1
+numpy==1.24.3
+pillow==10.3.0
+pydantic==2.6.4
+python-dotenv==0.19.2
+streamlit==1.37.0
+torch==2.0.1+cu117
+tqdm==4.64.0
