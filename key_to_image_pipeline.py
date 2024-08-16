@@ -106,8 +106,7 @@ def key_to_image(key: str,
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
         #
-        # oh this is copy paste from diffusers
-        # denoising loop
+        # This bit is copy paste from diffusers
         num_warmup_steps = len(timesteps) - num_inference_steps * pipe.scheduler.order
         #
         with pipe.progress_bar(total=num_inference_steps) as progress_bar:
