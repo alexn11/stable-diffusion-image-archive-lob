@@ -51,7 +51,7 @@ The bits corresponding to the embedding vector and seed image are converted into
 
 ## Misc.
 
-- References to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [https://babelia.libraryofbabel.info] vs ~190,000 on this version.
+- References to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [the Library Of Babel Image Archive](https://babelia.libraryofbabel.info) vs ~190,000 on this version.
 - Despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
 - Even though it's using stable diffusion, the random image locations are usually quite boring.
 - Unfortunately there is no proof/guarantee that several keys wouldn't produce the same image.
