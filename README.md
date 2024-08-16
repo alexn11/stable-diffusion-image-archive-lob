@@ -31,7 +31,7 @@ The app consists of the following elements:
 - "prev" and "next" buttons: look up the image corresponding respectively to the previous or to the key following the current one.
 - "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
 - Below the buttons: a text area showing the key (with a "copy" button on its right side).
-- Below the the key: a text input to search an image with a specific content, this will find a new key for an image that would be generated with the corresponding text input from the usual stable diffusion generation process.
+- Below the the key: a text input to search an image with a specific content, this will find a new key for an image that matches the prompt (or at least attempt to).
 
 ![example of randomly generated image](images/random-key.png)
 ![example of prompt look-up](images/prompt-lob.png)
