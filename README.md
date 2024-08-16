@@ -27,11 +27,11 @@ streamlit run app.py
 # Desciption of the main app
 
 The app consists of the following elements:
-- a "random" button: generate a random key and its associated image
-- a "prev" and "next" buttons: look up the image corresponding respectively to the previous or the next key from the current one
-- a "search again" button: search another image corresponding to the prompt given in the "prompt search" input
-- below the buttons: a text area below showing the key (with a copy button on its right side)
-- below the the key: a text input to search an image with a specific content, this will find a new key for an image that would be generated with the corresponding text input from the usual stable diffusion generation process.
+- "random" button: generate a random key and its associated image.
+- "prev" and "next" buttons: look up the image corresponding respectively to the previous or the next key from the current one
+- "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
+- Below the buttons: a text area showing the key (with a "copy" button on its right side).
+- Below the the key: a text input to search an image with a specific content, this will find a new key for an image that would be generated with the corresponding text input from the usual stable diffusion generation process.
 
 ![example of randomly generated image](images/random-key.png)
 ![example of prompt look-up](images/prompt-lob.png)
@@ -49,18 +49,15 @@ The keys are base 64 encoded binary strings of total length 189436.
 The bits corresponding to the embedding vector and seed image are converted into 16 bits floats. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
 
 
-
-
-
 ## Misc.
 
-- references to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [https://babelia.libraryofbabel.info] vs ~190,000 on this version.
-- despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
-- even though it's using stable diffusion, the random image locations are usually quite boring.
-- unfortunately there is no proof/guarantee that several keys wouldn't produce the same image.
-- similarly no proof that any interesting image could be reached by choosing the right key.
-- it's not possible to search for a specific image but it's possible to try and search for an image with a specific description using the prompt
-- descriptions provided in the prompt are sometimes disregarded
+- References to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [https://babelia.libraryofbabel.info] vs ~190,000 on this version.
+- Despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
+- Even though it's using stable diffusion, the random image locations are usually quite boring.
+- Unfortunately there is no proof/guarantee that several keys wouldn't produce the same image.
+- Similarly, there is no proof that any interesting image could be reached by choosing the right key.
+- It's not possible to search for a specific image but it's possible to try and search for an image with a specific description using the prompt.
+- Descriptions provided in the prompt are sometimes disregarded.
 
 
 # Credits
