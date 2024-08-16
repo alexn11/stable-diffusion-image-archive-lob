@@ -41,7 +41,7 @@ In the app you can see:
 # Technical details
 
 The keys encode different elements of a stable diffusion generation process used to ensure that the result is deterministic:
-- the embedding vector for some prompt (887010 bits)
+- the prompt embedding vector (887010 bits)
 - a seed image (249600 bits)
 - the number of inference steps (6 bits)
 
@@ -49,6 +49,7 @@ The keys are base 64 encoded binary strings of total length 189436.
 
 The bits corresponding to the embedding vector and seed image are converted into 16 bits floats. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
 
+When no prompt is given, the prompt embedding vector is generated randomly within some region close to the region where real prompt embeddings lie.
 
 ## Other details
 
