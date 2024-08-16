@@ -53,14 +53,15 @@ When no prompt is given, the prompt embedding vector is generated randomly withi
 
 ## Other details
 
-- Keys are ordered in some arbitrary way, the image depends on the key in a continuous way with this order.
-- References to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [the Library Of Babel Image Archive](https://babelia.libraryofbabel.info) vs ~190,000 on this version.
+- Keys are ordered in some arbitrary way, the image depends on the key in a continuous way with respect to this order.
+- References to image locations/keys  are much shorter than in the original: around 1,000,000 digits for an image on [the Library Of Babel Image Archive](https://babelia.libraryofbabel.info) vs ~190,000 on this version.
 - Despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
 - Even though it's using stable diffusion, the random image locations are usually quite boring.
 - Unfortunately there is no proof/guarantee that several keys wouldn't produce the same image.
 - Similarly, there is no proof that any interesting image could be reached by choosing the right key.
 - It's not possible to search for a specific image but it's possible to try and search for an image with a specific description using the prompt.
 - Descriptions provided in the prompt are sometimes disregarded.
+- Overall the result sucks but it was fun to make...
 
 ![example of randomly generated image](images/random-key.png)
 
