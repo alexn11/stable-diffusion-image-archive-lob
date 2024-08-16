@@ -106,8 +106,8 @@ def key_to_image(key: str,
         #
         extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
         #
-        # oh this is copy paste from diffusers... TODO: rewrite
-        # 7. Denoising loop
+        # oh this is copy paste from diffusers
+        # denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * pipe.scheduler.order
         #
         with pipe.progress_bar(total=num_inference_steps) as progress_bar:
@@ -145,6 +145,7 @@ def key_to_image(key: str,
         image = pipe.image_processor.postprocess(image, output_type=output_type, do_denormalize=do_denormalize)
         #
         # Offload last model to CPU
-        if hasattr(pipe, "final_offload_hook") and pipe.final_offload_hook is not None:
-            pipe.final_offload_hook.offload()
+        #if hasattr(pipe, "final_offload_hook") and pipe.final_offload_hook is not None:
+        #    print('>>>>>>>>>>>>>> final offload hook')
+        #    pipe.final_offload_hook.offload()
     return image[0]
