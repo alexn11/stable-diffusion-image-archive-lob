@@ -28,7 +28,7 @@ streamlit run app.py
 
 The app consists of the following elements:
 - "random" button: generate a random key and its associated image.
-- "prev" and "next" buttons: look up the image corresponding respectively to the previous or the next key from the current one
+- "prev" and "next" buttons: look up the image corresponding respectively to the previous or to the key following the current one.
 - "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
 - Below the buttons: a text area showing the key (with a "copy" button on its right side).
 - Below the the key: a text input to search an image with a specific content, this will find a new key for an image that would be generated with the corresponding text input from the usual stable diffusion generation process.
@@ -49,8 +49,9 @@ The keys are base 64 encoded binary strings of total length 189436.
 The bits corresponding to the embedding vector and seed image are converted into 16 bits floats. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
 
 
-## Misc.
+## Other details
 
+- Keys are ordered in some arbitrary way, the image depends on the key in a continuous way with this order.
 - References to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [the Library Of Babel Image Archive](https://babelia.libraryofbabel.info) vs ~190,000 on this version.
 - Despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
 - Even though it's using stable diffusion, the random image locations are usually quite boring.
