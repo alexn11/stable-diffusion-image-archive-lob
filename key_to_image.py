@@ -56,7 +56,6 @@ prompt = config['prompt']
 height = config['height']
 width = config['width']
 guidance_scale = config['guidance_scale']
-output_type = config['output_type']
 batch_size = config['batch_size']
 num_images_per_prompt = config['num_images_per_prompt']
 dtype = config['dtype']
@@ -185,7 +184,6 @@ for key_i, key in enumerate(keys):
                          batch_size=batch_size,
                          guidance_scale=guidance_scale,
                          do_classifier_free_guidance=do_classifier_free_guidance,
-                         output_type=output_type,
                          debug=do_debug)
     print(image)
     print(type(image))

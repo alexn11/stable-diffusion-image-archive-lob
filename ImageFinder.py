@@ -17,8 +17,7 @@ class ImageFinder:
                                       height=config['height'],
                                       width=config['width'],
                                       batch_size=config['batch_size'],
-                                      guidance_scale=config['guidance_scale'],
-                                      output_type='pil',)
+                                      guidance_scale=config['guidance_scale'],)
         enable_full_determinism()
         self.generator = None
         self.device = self.model_config['device']
@@ -30,7 +29,6 @@ class ImageFinder:
         self.image_width = self.model_config['width']
         self.guidance_scale = self.model_config['guidance_scale']
         self.do_classifier_free_guidance = self.model_config['do_classifier_free_guidance']
-        self.output_type = self.model_config['output_type']
         self.pipe_generator = torch.Generator(device=self.device).manual_seed(self.config['seed'])
         #pipe_generator = None
         self.pipe = prepare_model(self.model_config['model_name'],
@@ -49,7 +47,6 @@ class ImageFinder:
                      width=self.image_width,
                      guidance_scale=self.guidance_scale,
                      do_classifier_free_guidance=self.do_classifier_free_guidance,
-                     output_type=self.output_type,
                      max_steps=self.max_steps,
                      debug=self.debug)
         if(return_tuple):

@@ -26,9 +26,9 @@ def key_to_image(key: str,
                  latents_shape: tuple = latents_shape,
                  guidance_scale: float = 7.5,
                  do_classifier_free_guidance: bool = False,
-                 output_type: str = 'pil',
                  max_steps: int = 64,
                  debug=False) -> Image:
+    output_type = 'pil'
     if(num_inference_steps_nb_bits > 0):
         (
             num_inference_steps,
@@ -139,8 +139,7 @@ def key_to_image(key: str,
                     #if callback is not None and i % callback_steps == 0:
                     #    callback(i, t, latents)
         #
-        if not output_type == "latent":
-            image = pipe.vae.decode(latents / pipe.vae.config.scaling_factor, return_dict=False)[0]
+        image = pipe.vae.decode(latents / pipe.vae.config.scaling_factor, return_dict=False)[0]
         #
         do_denormalize = [True] * image.shape[0]
         image = pipe.image_processor.postprocess(image, output_type=output_type, do_denormalize=do_denormalize)

@@ -20,10 +20,8 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
                    width = image_width,
                    batch_size = 1,
                    num_images_per_prompt = 1,
-                   guidance_scale=7.5,
-                   output_type='pil'):
+                   guidance_scale=7.5,):
     guidance_scale = guidance_scale
-    output_type = output_type
     batch_size = batch_size # = number of prompts
     num_images_per_prompt = num_images_per_prompt
     dtype = torch.float32 if(device == 'cpu') else torch.float16
@@ -36,7 +34,6 @@ def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
         'height': height,
         'width': width,
         'guidance_scale': guidance_scale,
-        'output_type': output_type,
         'batch_size': batch_size,
         'num_images_per_prompt': num_images_per_prompt,
         'dtype': dtype,

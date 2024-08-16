@@ -25,6 +25,5 @@ class AppConfig:
             'batch_size': 1,
             'num_images_per_prompt': 1,
             'guidance_scale': 7.5,
-            'output_type': 'pil',
             'max_steps': max_steps,
         }
