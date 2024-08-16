@@ -63,7 +63,7 @@ def get_key():
         key = get_random_key()
     return key
 
-st.title('Stable diffusion babelia')
+st.title('Stable Diffusion Image Archive')
 
    
 image_load_state = st.empty()
