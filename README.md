@@ -62,7 +62,7 @@ The bits corresponding to the embedding vector and seed image are converted into
 
 # Credits
 
-This contains a copy of some of Hugging Face's *diffusers* code from [the stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py).
+I have lazily copied of some of Hugging Face's *diffusers* code from [the stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py).
 
 
 
