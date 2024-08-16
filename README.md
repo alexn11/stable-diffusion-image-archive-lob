@@ -1,11 +1,11 @@
-# introduction
+# Introduction
 
 This is an attempt for a stable diffusion version of [babel image archives](http://babelia.libraryofbabel.info/about.html).
 
 The idea is to replace image locations with keys encoding the image generation process in a fully deterministic way.
 
 
-# how to run
+# How to run
 
 1. Create an environment with the requirements installed by running the following in the root folder of the project:
 ```bash
@@ -24,7 +24,7 @@ streamlit run app.py
 ```
 5. This should automatically open the app on a tab of a web browser.
 
-# app
+# Desciption of the main app
 
 The app consists of the following elements:
 - a "random" button: generate a random key and its associated image
@@ -37,8 +37,7 @@ The app consists of the following elements:
 ![example of prompt look-up](images/prompt-lob.png)
 
 
-
-# technical details
+# Technical details
 
 The keys encode different elements of a stable diffusion generation process used to ensure that the result is deterministic:
 - the embedding vector for some prompt (887010 bits)
@@ -53,7 +52,7 @@ The bits corresponding to the embedding vector and seed image are converted into
 
 
 
-## remarks
+## Misc.
 
 - references to image locations ("keys") are much shorter than in the original: around 1,000,000 digits for an image on [https://babelia.libraryofbabel.info] vs ~190,000 on this version.
 - despite ensuring full determinism for a single system, the images generated might depend on the system it runs on resulting in different libraries on different systems.
@@ -64,7 +63,7 @@ The bits corresponding to the embedding vector and seed image are converted into
 - descriptions provided in the prompt are sometimes disregarded
 
 
-# other
+# Credits
 
 This contains a copy of some of Hugging Face's *diffusers* code from [the stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py).
 
