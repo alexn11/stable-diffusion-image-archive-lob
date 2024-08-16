@@ -26,15 +26,16 @@ streamlit run app.py
 
 # Desciption of the main app
 
-The app consists of the following elements:
-- "random" button: generate a random key and its associated image.
-- "prev" and "next" buttons: look up the image corresponding respectively to the previous or to the key following the current one.
-- "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
-- Below the buttons: a text area showing the key (with a "copy" button on its right side).
-- Below the the key: a text input to search an image with a specific content, this will find a new key for an image that matches the prompt (or at least attempt to).
-
-![example of randomly generated image](images/random-key.png)
 ![example of prompt look-up](images/prompt-lob.png)
+
+
+In the app you can see:
+- The image it found (after any request).
+- A "random" button: generate a random key and its associated image.
+- "prev" and "next" buttons: look up the image corresponding respectively to the previous or to the key following the current one.
+- A "search again" button: search another image corresponding to the prompt given in the "prompt search" input.
+- Below the buttons, a text area showing the key (with a "copy" button on its right side).
+- Below the the key, a text input to search an image with a specific content: this will find a new key for an image that matches the prompt (or at least attempts to).
 
 
 # Technical details
@@ -59,6 +60,8 @@ The bits corresponding to the embedding vector and seed image are converted into
 - Similarly, there is no proof that any interesting image could be reached by choosing the right key.
 - It's not possible to search for a specific image but it's possible to try and search for an image with a specific description using the prompt.
 - Descriptions provided in the prompt are sometimes disregarded.
+
+![example of randomly generated image](images/random-key.png)
 
 
 # Credits
