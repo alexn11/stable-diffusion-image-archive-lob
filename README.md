@@ -60,8 +60,7 @@ When no prompt is given, the prompt embedding vector is generated randomly withi
 
 ![example of randomly generated image](images/random-key.png)
 
-# Why it wasn't a good idea
-
+# Things that don't work
 
 - Even though it's using stable diffusion, a random key usually produces a boring image.
 - Unfortunately there is no guarantee that several keys wouldn't produce the same image.
