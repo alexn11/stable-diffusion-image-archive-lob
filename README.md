@@ -63,11 +63,10 @@ When no prompt is given, the prompt embedding vector is generated randomly withi
 # Why it wasn't a good idea
 
 
-- Even though it's using stable diffusion, a random key usually produces a boring images.
-- Unfortunately there is no proof/guarantee that several keys wouldn't produce the same image.
-- Similarly, there is no proof that any interesting image could be reached by choosing the right key.
+- Even though it's using stable diffusion, a random key usually produces a boring image.
+- Unfortunately there is no guarantee that several keys wouldn't produce the same image.
+- Similarly, there is no proof that any particular image can be reached by choosing the right key.
 - Descriptions provided in the prompt are sometimes disregarded.
-- Overall the result sucks but it was fun to make...
 
 
 
