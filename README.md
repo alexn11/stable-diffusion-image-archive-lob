@@ -3,7 +3,7 @@
 This is an attempt for a stable diffusion version of [babel image archives](http://babelia.libraryofbabel.info/about.html).
 
 The idea is to replace image locations with keys encoding the image generation process in a fully deterministic way.
-
+I was hoping to reduce the size of the location (✅️) and produce less random images (❌️).
 
 # How to run
 
