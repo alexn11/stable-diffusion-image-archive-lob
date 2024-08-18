@@ -26,7 +26,7 @@ streamlit run app.py
 ```
 5. This should automatically open the app on a tab of a web browser.
 
-## Tests
+## Tests (optional)
 
 There's no standard test framework. Instead run the scripts named something like `test-*`. Normally these should run with no error.
 
