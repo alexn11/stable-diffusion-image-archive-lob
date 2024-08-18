@@ -70,7 +70,7 @@ When no prompt is given, the prompt embedding vector is generated randomly withi
 
 # Credits
 
-I have lazily copied the generation loop of Hugging Face's *diffusers* code from [the stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py) and modified it a little bit. I have written everything else on my own.
+The stable diffusion generation loop comes from Hugging Face's *diffusers* code, from [their stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py) with some modifications. I have written everything else on my own.
 
 
 
