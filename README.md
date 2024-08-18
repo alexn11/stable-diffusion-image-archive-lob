@@ -7,6 +7,8 @@ Like with the [text version using GPT-2](https://github.com/alexn11/gpt-2-librar
 
 # How to run
 
+Note: This only work on a system where *cuda* is available with PyTorch.
+
 1. Create an environment with the requirements installed by running the following in the root folder of the project:
 ```bash
 python -m venv .venv
