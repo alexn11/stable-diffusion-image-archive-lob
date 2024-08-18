@@ -26,9 +26,6 @@ streamlit run app.py
 ```
 5. This should automatically open the app on a tab of a web browser.
 
-## Tests (optional)
-
-There's no standard test framework. Instead run the scripts named something like `test-*`. Normally these should run with no error.
 
 # Desciption of the main app
 
@@ -56,6 +53,10 @@ The keys are base 64 encoded binary strings of total length 189436.
 The bits corresponding to the embedding vector and seed image are converted into 16 bits floats. The exponents are encoded within the key with 4 bits instead of 5 with a specific bias for each. This ensures that the length of the key is minimal and the values generated are within the expected model data distribution.
 
 When no prompt is given, the prompt embedding vector is generated randomly within some region close to the region where real prompt embeddings lie.
+
+## Dev tests
+
+To check that nothing is broken, run the scripts named something like `test-*`. Normally these should run with no error.
 
 ## Other details
 
