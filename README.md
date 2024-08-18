@@ -66,7 +66,7 @@ When no prompt is given, the prompt embedding vector is generated randomly withi
 - Unfortunately there is no guarantee that several keys wouldn't produce the same image.
 - Similarly, there is no proof that any particular image can be reached by choosing the right key.
 - Descriptions provided in the prompt are sometimes disregarded.
-- I don't really use the promp embedding vector properly due to the way the negative prompt is generated.
+- The negative prompt embeddings is not generated as it should.
 
 
 
