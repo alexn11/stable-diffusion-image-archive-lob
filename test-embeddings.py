@@ -67,6 +67,7 @@ print('  @')
 print(np.argwhere(abs_diff_2))
 
 
+print('✅️ passed')
 
 
 
