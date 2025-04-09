@@ -81,7 +81,9 @@ To check that nothing is broken, run the scripts named something like `test-*`. 
 
 The stable diffusion generation loop comes from Hugging Face's *diffusers* code, from [their stable diffusion pipeline](https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py) with some modifications.
 
+---
 
+*If you like this project, consider [buying me a coffee :)](https://buymeacoffee.com/alexn11)*
 
 
 
