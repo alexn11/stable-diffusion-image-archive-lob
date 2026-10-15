@@ -129,15 +129,15 @@ if(prompt != ''):
             for k in range(nb_keys)
         ]
 elif(embeddings_file != ''):
-    embeddings = np.load(embeddings_file)
+    embeddings: np.ndarray = np.load(embeddings_file)
     nb_embeddings = len(embeddings)
-    embeddings = torch.tensor(embeddings).reshape((nb_embeddings, 2) + prompt_embeddings_shape).to(torch.float16).to(device)
+    embeddings = torch.tensor(embeddings).reshape((nb_embeddings, 1) + prompt_embeddings_shape).to(torch.float16).to(device)
     keys = [
-                compute_key_from_data(embeddings=embedding[1],
-                                latents=None,
-                                latents_shape=latents_shape,
-                                num_inference_steps=num_inference_steps,
-                                debug=do_debug)
+                compute_key_from_data(embeddings=embedding[0],
+                                      latents=None,
+                                      latents_shape=latents_shape,
+                                      num_inference_steps=num_inference_steps,
+                                      debug=do_debug)
                 for embedding in embeddings
             ]
 
