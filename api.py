@@ -17,7 +17,7 @@ import base64
 import io
 
 from fastapi import FastAPI, Depends
-from pydantic import BaseModel, constr, validator
+from pydantic import BaseModel
 
 from model_constants import key_length
 from key_strings import base64_characters
