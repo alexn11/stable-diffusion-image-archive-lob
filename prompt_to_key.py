@@ -35,11 +35,11 @@ def compute_prompt_embedding(pipe: DiffusionPipeline,
                              single_embeddings=True,
                              debug=False) -> torch.Tensor:
     do_classifier_free_guidance = guidance_scale > 1.0
-    prompt_embeds = pipe._encode_prompt(prompt,
-                                        device,
-                                        num_images_per_prompt,
-                                        do_classifier_free_guidance,
-                                        negative_prompt='',)
+    prompt_embeds = pipe.encode_prompt(prompt,
+                                       device,
+                                       num_images_per_prompt,
+                                       do_classifier_free_guidance,
+                                       negative_prompt='',)
     if(single_embeddings):
         prompt_embeds = prompt_embeds[1]
     value_normaliser = FloatPacker(max_exponent=prompt_embeddings_exponent_max,
