@@ -158,8 +158,6 @@ for key_i, key in enumerate(keys):
                          guidance_scale=guidance_scale,
                          do_classifier_free_guidance=do_classifier_free_guidance,
                          debug=do_debug)
-    print(image)
-    print(type(image))
     image.show()
     if(parsed_args.output_file_name != ''):
         output_file_path = f'{parsed_args.output_file_name}-{key_i:03d}.png'
