@@ -40,16 +40,17 @@ def embed_prompt(pipe: StableDiffusionPipeline,
                   num_images_per_prompt,
                   do_classifier_free_guidance) -> torch.Tensor:
     with torch.no_grad():
-        prompt_embeds = pipe._encode_prompt(prompt,
-                                            device,
-                                            num_images_per_prompt,
-                                            do_classifier_free_guidance,
-                                            None)
+        prompt_embeds = pipe.encode_prompt(prompt,
+                                           device,
+                                           num_images_per_prompt,
+                                           do_classifier_free_guidance,
+                                           None)[0]
     return prompt_embeds
 
 class TextDataset(Dataset):
-    def __init__(self, texts: list[str]):
-        self.texts = texts
+    def __init__(self, texts: list[str], sample=0.75):
+        nb_texts = len(texts)
+        self.texts = texts[:int(sample * nb_texts)]
     def __len__(self):
         return len(self.texts)
     def __getitem__(self, idx):
