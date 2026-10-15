@@ -25,6 +25,7 @@ fastapi run api.py
 streamlit run app.py
 ```
 5. Open the webapp in the browser [http://localhost:8501/](http://localhost:8501/)
+6. Write a prompt then press Enter, wait for the result.
 
 
 # Desciption of the main app
