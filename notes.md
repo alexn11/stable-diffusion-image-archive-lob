@@ -145,7 +145,7 @@ ython key_to_image.py --key-file test-key.txt --num-inference-steps 8 --latents-
 ## tech
 
 - [https://keras.io/examples/generative/random_walks_with_stable_diffusion/]
-- stable diffusion prompt encoding shape: (77, 768), dim total: 59136
+- stable diffusion prompt encoding shape: (77, 768), dim total: 59136 -> (77, 1024)
 - the embedding computed in the hugging face pipe is actually a duplication of the above embedding, hence has shape (2,77,768) but with twice the same vector
 - size of embedding vector, in bytes: 2*77*768 = 118272 (times 2 is for float16 used only with gpu, on cpu would be double)
     - bits: 946176 = 16*77*768

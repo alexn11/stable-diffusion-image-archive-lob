@@ -11,20 +11,20 @@ Like with the [text version using GPT-2](https://github.com/alexn11/gpt-2-librar
 
 1. Create an environment with the requirements installed by running the following in the root folder of the project:
 ```bash
-python -m venv .venv
+uv venv
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 2. Launch the API server: 
 ```bash
-fastapi api.py
+fastapi run api.py
 ```
-3. Wait that this is ready (should show: "INFO:     Application startup complete.")
-4. Launch the app:
+3. Wait for it to be ready.
+4. Launch the front end app:
 ```bash
 streamlit run app.py
 ```
-5. This should automatically open the app on a tab of a web browser.
+5. Open the webapp in the browser [http://localhost:8501/](http://localhost:8501/)
 
 
 # Desciption of the main app
