@@ -53,7 +53,7 @@ def compute_key_from_data(embeddings: torch.Tensor,
                           num_inference_steps: int | None = None,
                           debug=False) -> str:
     embeddings_data = embeddings.flatten().detach().cpu().numpy()
-    assert(embeddings_data.shape == (77*768,))
+    assert(embeddings_data.shape == (77*1024,))
     if((latents is None) and (latents_shape is None)):
         raise ValueError(f'obsolete undocumented functionality reached')
     else:
@@ -90,7 +90,7 @@ def generate_key_from_prompt(prompt: str,
                                                  num_images_per_prompt=num_images_per_prompt,)
     if(debug):
         try:
-            assert(prompt_embeddings.shape[-2:] == ( 77, 768, ))
+            assert(prompt_embeddings.shape[-2:] == ( 77, 1024, ))
         except AssertionError:
             print(f'prompt emb shape: {prompt_embeddings.shape} (expect: 77,768)')
             raise
