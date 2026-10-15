@@ -14,6 +14,8 @@
 
 
 import argparse
+import gc
+import time
 
 import numpy as np
 import torch
@@ -101,23 +103,19 @@ elif(key_file_path != ''):
 else:
     print(f'generating {nb_keys} keys')
     keys = [ generate_random_key_base64(data_nb_bits,) for i in range(nb_keys) ]
-    #for k in keys:
-    #    print(f'{len(k)}')
+
 #array_key = compute_embedding_from_key(key)
-#prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768))
+#prompt_embeds = torch.tensor(array_key, dtype=torch.float16).to(device).reshape((77,768)) # 768->1024
 #assert(-1e-6 < prompt_embeds[0,19].item() + 28.078125 < 1e-6)
 #assert(-1e-6 < prompt_embeds[0,681].item() - 33.09375 < 1e-6)
 #prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-#assert(prompt_embeds.shape == (2,77,768))
-
+#assert(prompt_embeds.shape == (2,77,768)) # 768->1024
 
 enable_full_determinism()
-
 
 generator = None
 
 pipe_generator = torch.Generator(device=device).manual_seed(parsed_args.seed)
-#pipe_generator = None
 pipe = prepare_model(model_name, dtype, device, )
 
 if(prompt != ''):
@@ -130,32 +128,6 @@ if(prompt != ''):
                                     latents=None,)
             for k in range(nb_keys)
         ]
-    #key_0 = generate_key_from_prompt(prompt=prompt,
-    #                                 pipe=pipe,
-    #                                 device=device,
-    #                                 num_images_per_prompt=num_images_per_prompt,
-    #                                 latents=None,)
-    #nb_steps = nb_keys
-    #step_size = 2
-    #keys = [ key_0 ]
-    #prev_key = key_0
-    #for step_i in range(nb_steps):
-    #    next_key = get_next_key(prev_key)
-    #    #for i in range(1845):
-    #    for i in range(step_size):
-    #        #next_key = get_next_key(next_key, skip=0)
-    #        next_key = get_next_key(prev_key, skip=key_step_skip)
-    #    keys.append(next_key)
-    #    prev_key = next_key
-    #print(f'k:{keys[0] == keys[1]}')
-    #for i in range(len(key_0)):
-    #    a = keys[0][i]
-    #    b = keys[1][i]
-    #    if(a != b):
-    #        print(f'd={i}: "{a}" - "{b}" -- i={i}+{key_step_skip}={i+key_step_skip} - len={len(key_0)}')
-    #raise Exception('end')
-    #keys += [ get_next_key(key) for key in keys[:nb_keys] ]
-    #keys += [ get_next_key(key, direction=-1) for key in keys[:nb_keys] ]
 elif(embeddings_file != ''):
     embeddings = np.load(embeddings_file)
     nb_embeddings = len(embeddings)
@@ -169,21 +141,6 @@ elif(embeddings_file != ''):
                 for embedding in embeddings
             ]
 
-"""
-vae_scale_factor = pipe.vae_scale_factor
-num_channels = pipe.unet.config.in_channels
-print(f'💄️ vae scale factor: {vae_scale_factor}')
-print(f'💄️ num channels: {num_channels}')
-latents = prepare_latents(batch_size=batch_size,
-                          num_channels_latents=num_channels,
-                          num_images_per_prompt=num_images_per_prompt,
-                          device=device,
-                          dtype=dtype,
-                          height=height,
-                          width=width,
-                          vae_scale_factor=vae_scale_factor,
-                          generator=generator)
-"""
       
 for key_i, key in enumerate(keys):
     print(f'key len={len(key)}')
@@ -207,3 +164,7 @@ for key_i, key in enumerate(keys):
     if(parsed_args.output_file_name != ''):
         output_file_path = f'{parsed_args.output_file_name}-{key_i:03d}.png'
         image.save(output_file_path)
+    time.sleep(0.1)
+    gc.collect()
+    torch.cuda.empty_cache()
+    time.sleep(0.4)
