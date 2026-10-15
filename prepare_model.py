@@ -25,7 +25,7 @@ def load_model(model_name, dtype, device) -> DiffusionPipeline:
     return pipe
 
 # use sd2-community/stable-diffusion-2-1-unclip-small instead
-def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
+def prepare_config(model_name = 'sd2-community/stable-diffusion-2-1-unclip-small',
                    device = 'cuda',
                    num_inference_steps = 50,
                    prompt = '',
