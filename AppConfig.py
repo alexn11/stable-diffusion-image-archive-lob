@@ -31,7 +31,7 @@ class AppConfig:
         self.image_finder_config_dict = {
             'seed': int(seed),
             'debug': (debug in ['1', 'True', 'true', 'on']),
-            'model_name': os.environ.get('MODEL_NAME', 'stabilityai/stable-diffusion-2-1-unclip-small'),
+            'model_name': os.environ.get('MODEL_NAME', 'sd2-community/stable-diffusion-2-1-unclip-small'),
             'device': os.environ.get('DEVICE', 'cuda'),
             'prompt': '',
             'num_inference_steps': int(os.environ.get('NUM_INFERENCE_STEPS', 50)),
