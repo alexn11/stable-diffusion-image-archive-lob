@@ -21,7 +21,7 @@ import streamlit as st
 
 
 load_dotenv('app.env')
-api_url = os.environ['API_URL']
+api_url = os.environ.get('API_URL', 'http://127.0.0.1:8000')
 
 def request_api(method: str, path: str, data: dict | None = None, fetching=False):
     print(f'sending query to "{path}"')

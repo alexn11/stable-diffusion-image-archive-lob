@@ -22,11 +22,11 @@ from model_constants import image_height, image_width
 class AppConfig:
     def __init__(self, dotenv_file='api.env'):
         load_dotenv(dotenv_file)
-        self.image_cache_folder = os.environ.get('IMAGE_CACHE_FOLDER', '.')
+        self.image_cache_folder = os.environ.get('IMAGE_CACHE_FOLDER', 'cache')
         self.make_image_finder_config_dict()
     def make_image_finder_config_dict(self,):
         seed = os.environ.get('SEED', '0')
-        debug = os.environ.get('DEBUG', '')
+        debug = os.environ.get('DEBUG', '0')
         max_steps = int(os.environ.get('MAX_STEPS', '64'))
         self.image_finder_config_dict = {
             'seed': int(seed),
