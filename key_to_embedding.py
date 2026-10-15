@@ -81,7 +81,7 @@ def unpack_array(data_stream: BitStream,
               + array_as_list[680:])
         if(debug):
             try:
-                assert(len(array_as_list) == 77*768)
+                assert(len(array_as_list) == 77*1024) # changed from 77*768
             except AssertionError:
                 print(f'array len={len(array_as_list)} - expected nb values: {size_nb_values}')
                 raise

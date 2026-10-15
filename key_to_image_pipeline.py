@@ -20,6 +20,7 @@ import torch
 from model_constants import prompt_embeddings_shape, latents_shape
 from model_constants import num_inference_steps_nb_bits
 from model_constants import image_height, image_width
+from model_constants import projection_class_embeddings_input_dim
 from key_to_embedding import unpack_key
 from prepare_model import prepare_latents
 
@@ -59,7 +60,7 @@ def key_to_image(key: str,
         num_inference_steps = max_steps
     prompt_embeds = torch.tensor(prompt_embeds_data, dtype=dtype).to(device).reshape(prompt_embeddings_shape)
     prompt_embeds = torch.stack([prompt_embeds, prompt_embeds])
-    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape)
+    seed_image = torch.tensor(latents_data, dtype=dtype).reshape(latents_shape).to(device)
     # >👲️👲️👲️
     #seed_image = prepare_latents(batch_size=batch_size,
     #                             num_images_per_prompt=num_images_per_prompt,
@@ -100,6 +101,9 @@ def key_to_image(key: str,
     if(debug):
         assert(latents_shape[1] == num_channels_latents)
 
+    # FIX: no idea what this does
+    unet_class_labels = torch.zeros(projection_class_embeddings_input_dim, dtype=dtype).to(device)
+
     with torch.no_grad():
         generator = torch.Generator(device=pipe.device).manual_seed(generator.initial_seed())
         pipe.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -118,7 +122,7 @@ def key_to_image(key: str,
         )
         #print(f'after: {seed_image[0][:][0][0]}')
         #
-        extra_step_kwargs = pipe.prepare_extra_step_kwargs(None, 0.0)
+        extra_step_kwargs = pipe.prepare_extra_step_kwargs(generator, 0.0)
         #
         # This bit is copy paste from diffusers
         num_warmup_steps = len(timesteps) - num_inference_steps * pipe.scheduler.order
@@ -135,6 +139,7 @@ def key_to_image(key: str,
                     encoder_hidden_states=prompt_embeds,
                     cross_attention_kwargs=None,
                     return_dict=False,
+                    class_labels=unet_class_labels,
                 )[0]
                 # perform guidance
                 if do_classifier_free_guidance:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from diffusers.utils.testing_utils import enable_full_determinism
+from diffusers.utils.torch_utils import enable_full_determinism
 from PIL import Image
 import torch
 

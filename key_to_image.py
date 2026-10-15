@@ -17,7 +17,7 @@ import argparse
 
 import numpy as np
 import torch
-from diffusers.utils.testing_utils import enable_full_determinism
+from diffusers.utils.torch_utils import enable_full_determinism
 
 from model_constants import data_nb_bits
 from model_constants import num_inference_steps_nb_bits
@@ -34,7 +34,8 @@ arg_parser.add_argument('--embeddings-file', type=str, default='')
 #arg_parser.add_argument('--height', type=int, default=416)
 arg_parser.add_argument('--device', type=str, choices=['cuda', 'cpu', ], default='cuda')
 arg_parser.add_argument('--num-inference-steps', type=int, default=50)
-arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
+#arg_parser.add_argument('--model-name', type=str, default='stabilityai/stable-diffusion-2-1-unclip-small')
+arg_parser.add_argument('--model-name', type=str, default='sd2-community/stable-diffusion-2-1-unclip-small')
 arg_parser.add_argument('--nb-keys', type=int, default=8)
 arg_parser.add_argument('--key-file', type=str, default='')
 arg_parser.add_argument('--seed', type=int, default=768)

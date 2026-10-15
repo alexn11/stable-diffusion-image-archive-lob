@@ -20,11 +20,11 @@ from model_constants import image_height, image_width
 
 
 def load_model(model_name, dtype, device) -> DiffusionPipeline:
-    pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=dtype)
+    pipe = DiffusionPipeline.from_pretrained(model_name, dtype=dtype, local_files_only=True)
     pipe.to(device)
     return pipe
 
-
+# use sd2-community/stable-diffusion-2-1-unclip-small instead
 def prepare_config(model_name = 'stabilityai/stable-diffusion-2-1-unclip-small',
                    device = 'cuda',
                    num_inference_steps = 50,

@@ -14,7 +14,8 @@
 
 from functools import reduce
 
-prompt_embeddings_shape = (77, 768)
+# prompt_embeddings_shape = (77, 768) # old version
+prompt_embeddings_shape = (77, 1024)
 prompt_embeddings_nb_special_values = 2
 prompt_embeddings_nb_values = reduce(lambda x,y:x*y, prompt_embeddings_shape) - prompt_embeddings_nb_special_values
 prompt_embeddings_bits_per_value = 15
@@ -63,3 +64,4 @@ image_height = 416
 image_width = 640
 
 
+projection_class_embeddings_input_dim = 3*512 # no idea where this number come from 🥲
